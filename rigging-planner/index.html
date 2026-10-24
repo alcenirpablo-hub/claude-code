@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plano de Rigging</title>
+<style>
+:root{--bg:#f3f4f6;--panel:#fff;--line:#d1d5db;--txt:#111827;--mut:#6b7280;--ok:#15803d;--warn:#b45309;--fail:#b91c1c;--acc:#1d4ed8}
+*{box-sizing:border-box}
+body{margin:0;font:13px/1.35 system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--txt)}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;background:#111827;color:#fff}
+header h1{font-size:16px;margin:0 12px 0 0}
+header button,header label.btn{background:#374151;color:#fff;border:0;border-radius:4px;padding:6px 10px;cursor:pointer;font-size:12px}
+header button:hover,header label.btn:hover{background:#4b5563}
+#layout{display:grid;grid-template-columns:200px 1fr 330px;gap:8px;padding:8px;align-items:start}
+@media(max-width:1100px){#layout{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px}
+.panel h3{margin:0 0 6px;font-size:13px}
+#lifts .item{padding:6px;border:1px solid var(--line);border-radius:4px;margin-bottom:4px;cursor:pointer;display:flex;justify-content:space-between;gap:4px}
+#lifts .item.sel{border-color:var(--acc);background:#eff6ff}
+.tabs{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:8px}
+.tabs button{border:1px solid var(--line);background:#e5e7eb;padding:6px 10px;border-radius:4px 4px 0 0;cursor:pointer}
+.tabs button.on{background:var(--panel);border-bottom-color:var(--panel);font-weight:600}
+.tab{display:none}.tab.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 12px}
+label.f{display:flex;flex-direction:column;gap:2px;font-size:12px;color:var(--mut)}
+label.f input,label.f select{font:inherit;padding:4px;border:1px solid var(--line);border-radius:3px;color:var(--txt);background:#fff;width:100%}
+label.f.chk{flex-direction:row;align-items:center;gap:6px}
+label.f.chk input{width:auto}
+fieldset{border:1px solid var(--line);border-radius:6px;margin:0 0 10px;padding:8px}
+legend{font-weight:600;padding:0 4px}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid var(--line);padding:3px 5px;text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{background:#f3f4f6;font-weight:600}
+td input{width:70px;padding:2px;border:1px solid var(--line);border-radius:3px;font:inherit}
+td input.w{width:130px}
+.btn2{border:1px solid var(--line);background:#f9fafb;border-radius:4px;padding:4px 8px;cursor:pointer;font:inherit}
+.btn2:hover{background:#e5e7eb}
+.btn2.pri{background:var(--acc);color:#fff;border-color:var(--acc)}
+.btn2.del{color:var(--fail)}
+.st{display:inline-block;min-width:44px;text-align:center;border-radius:3px;padding:1px 5px;color:#fff;font-weight:600;font-size:11px}
+.st.ok{background:var(--ok)}.st.warn{background:var(--warn)}.st.fail{background:var(--fail)}.st.info{background:#6b7280}
+.verdict{padding:8px;border-radius:6px;color:#fff;font-weight:700;text-align:center;margin-bottom:8px}
+.verdict.ok{background:var(--ok)}.verdict.warn{background:var(--warn)}.verdict.fail{background:var(--fail)}
+.cvs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:1100px){.cvs{grid-template-columns:1fr}}
+canvas.view{width:100%;height:400px;background:#fff;border:1px solid var(--line);border-radius:4px;touch-action:none}
+.note{color:var(--mut);font-size:12px;margin:4px 0}
+.warnbox{background:#fffbeb;border:1px solid #fcd34d;border-radius:4px;padding:6px;margin:6px 0;font-size:12px}
+.tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0}
+.hl{background:#fde68a;font-weight:700}
+.nul{color:#9ca3af}
+.scroll{overflow:auto;max-height:420px}
+#results table td:nth-child(2){text-align:right}
+#report .sheet{background:#fff;padding:16px;border:1px solid var(--line)}
+#report h2{margin:14px 0 6px;font-size:15px;border-bottom:2px solid #111827}
+#report img{max-width:100%;border:1px solid var(--line);margin:4px 0}
+.sign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-top:40px}
+.sign div{border-top:1px solid #000;text-align:center;padding-top:4px}
+@media print{
+ header,#lifts,#results,.tabs,.tab:not(#tab-report),.noprint{display:none!important}
+ #layout{display:block;padding:0}
+ .panel{border:0;padding:0}
+ #tab-report{display:block!important}
+ body{background:#fff}
+}
+</style>
+</head>
+<body>
+<header>
+ <h1>Plano de Rigging</h1>
+ <button id="bNew">Novo projeto</button>
+ <button id="bSave">Exportar projeto (.json)</button>
+ <label class="btn">Abrir projeto<input type="file" id="fOpen" accept=".json" hidden></label>
+ <button id="bPrint">Imprimir / PDF</button>
+ <span id="saveInfo" style="font-size:11px;color:#9ca3af"></span>
+</header>
+<div id="layout">
+ <aside class="panel" id="lifts">
+  <h3>Içamentos</h3>
+  <div id="liftList"></div>
+  <div class="tools"><button class="btn2" id="bAddLift">+ Novo</button><button class="btn2" id="bDupLift">Duplicar</button><button class="btn2 del" id="bDelLift">Excluir</button></div>
+  <p class="note">Cada içamento é um cenário completo (carga, rigging, guindaste, posições). Compare todos no Relatório.</p>
+ </aside>
+ <main class="panel">
+  <div class="tabs" id="tabs"></div>
+  <section class="tab" id="tab-scene"></section>
+  <section class="tab" id="tab-load"></section>
+  <section class="tab" id="tab-rig"></section>
+  <section class="tab" id="tab-crane"></section>
+  <section class="tab" id="tab-site"></section>
+  <section class="tab" id="tab-lib"></section>
+  <section class="tab" id="tab-check"></section>
+  <section class="tab" id="tab-report"></section>
+ </main>
+ <aside class="panel" id="results"></aside>
+</div>
+<script>
+'use strict';
+/* =====================================================================
+   MOTOR DE CÁLCULO — unidades: m, t (tonelada métrica), kN, graus
+   ===================================================================== */
+const G = 9.80665;
+const rad = d => d * Math.PI / 180, deg = r => r * 180 / Math.PI;
+const clone = o => JSON.parse(JSON.stringify(o));
+const num = (v, d = 0) => (v === '' || v === null || v === undefined || isNaN(+v)) ? d : +v;
+const fmt = (n, d = 2) => (n === null || n === undefined || !isFinite(n)) ? '—' : (+n).toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ---------- geometria 2D ---------- */
+function obb(cx, cy, w, d, rotDeg) {
+  const a = rad(rotDeg), c = Math.cos(a), s = Math.sin(a), hx = w / 2, hy = d / 2;
+  return [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]].map(([x, y]) => ({ x: cx + x * c - y * s, y: cy + x * s + y * c }));
+}
+function satOverlap(A, B) {
+  for (const P of [A, B]) {
+    for (let i = 0; i < P.length; i++) {
+      const a = P[i], b = P[(i + 1) % P.length];
+      const nx = -(b.y - a.y), ny = b.x - a.x;
+      let minA = 1e18, maxA = -1e18, minB = 1e18, maxB = -1e18;
+      for (const p of A) { const v = nx * p.x + ny * p.y; minA = Math.min(minA, v); maxA = Math.max(maxA, v); }
+      for (const p of B) { const v = nx * p.x + ny * p.y; minB = Math.min(minB, v); maxB = Math.max(maxB, v); }
+      if (maxA <= minB + 1e-9 || maxB <= minA + 1e-9) return false;
+    }
+  }
+  return true;
+}
+function pointInPoly(p, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i], b = poly[j];
+    if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+  }
+  return inside;
+}
+function distPointPoly(p, poly) {
+  if (pointInPoly(p, poly)) return 0;
+  let best = 1e18;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const dx = b.x - a.x, dy = b.y - a.y, L2 = dx * dx + dy * dy;
+    let t = L2 ? ((p.x - a.x) * dx + (p.y - a.y) * dy) / L2 : 0; t = Math.max(0, Math.min(1, t));
+    best = Math.min(best, Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy)));
+  }
+  return best;
+}
+/* recorte de segmento por polígono convexo CCW (Cyrus–Beck): devolve [t0,t1] */
+function clipSeg(p0, p1, poly) {
+  let t0 = 0, t1 = 1; const dx = p1.x - p0.x, dy = p1.y - p0.y;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i], b = poly[(i + 1) % poly.length];
+    const nx = -(b.y - a.y), ny = b.x - a.x;
+    const n0 = nx * (p0.x - a.x) + ny * (p0.y - a.y), den = nx * dx + ny * dy;
+    if (Math.abs(den) < 1e-12) { if (n0 < 0) return null; continue; }
+    const t = -n0 / den;
+    if (den > 0) { if (t > t0) t0 = t; } else { if (t < t1) t1 = t; }
+    if (t0 > t1) return null;
+  }
+  return [t0, t1];
+}
+
+/* ---------- álgebra: sistema 3x3 ---------- */
+function solve3(M, b) {
+  const A = M.map((r, i) => [...r, b[i]]);
+  for (let i = 0; i < 3; i++) {
+    let p = i; for (let r = i + 1; r < 3; r++) if (Math.abs(A[r][i]) > Math.abs(A[p][i])) p = r;
+    [A[i], A[p]] = [A[p], A[i]];
+    if (Math.abs(A[i][i]) < 1e-15) return [0, 0, 0];
+    for (let r = i + 1; r < 3; r++) { const f = A[r][i] / A[i][i]; for (let c = i; c < 4; c++) A[r][c] -= f * A[i][c]; }
+  }
+  const x = [0, 0, 0];
+  for (let i = 2; i >= 0; i--) { let s = A[i][3]; for (let c = i + 1; c < 3; c++) s -= A[i][c] * x[c]; x[i] = s / A[i][i]; }
+  return x;
+}
+
+/* Distribuição de carga vertical entre apoios (corpo rígido sobre apoios elásticos).
+   pts: [{x,y}], cg:{x,y}, W: carga vertical total, ks: rigidez vertical de cada apoio.
+   Apoios que ficariam em tração negativa (frouxos) são removidos iterativamente. */
+function distribute(pts, cg, W, ks) {
+  let act = pts.map((_, i) => i), V = pts.map(() => 0);
+  for (let it = 0; it <= pts.length; it++) {
+    const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+    act.forEach(i => {
+      const b = [1, pts[i].x - cg.x, pts[i].y - cg.y];
+      for (let a = 0; a < 3; a++) for (let c = 0; c < 3; c++) M[a][c] += ks[i] * b[a] * b[c];
+    });
+    const tr = (M[0][0] + M[1][1] + M[2][2]) / 3 || 1;
+    for (let a = 0; a < 3; a++) M[a][a] += tr * 1e-9;
+    const c = solve3(M, [W, 0, 0]);
+    V = pts.map(() => 0);
+    act.forEach(i => { V[i] = ks[i] * (c[0] + c[1] * (pts[i].x - cg.x) + c[2] * (pts[i].y - cg.y)); });
+    let worst = -1, wv = -1e-9;
+    act.forEach(i => { if (V[i] < wv) { wv = V[i]; worst = i; } });
+    if (worst < 0 || act.length <= 1) break;
+    act = act.filter(i => i !== worst);
+  }
+  let mx = 0, my = 0, sv = 0;
+  pts.forEach((p, i) => { mx += V[i] * (p.x - cg.x); my += V[i] * (p.y - cg.y); sv += V[i]; });
+  const ecc = W > 0 ? Math.hypot(mx, my) / W : 0;
+  return { V, ecc, stable: ecc < 0.03 && Math.abs(sv - W) < 1e-6 * Math.max(1, W), slack: V.map(v => v <= 1e-9) };
+}
+
+/* ---------- guindaste: geometria da lança e tabela de carga ---------- */
+function tipPos(g, L, angDeg) {
+  let x = g.pivotOff + L * Math.cos(rad(angDeg)), z = g.pivotH + L * Math.sin(rad(angDeg));
+  const bx = x, bz = z;
+  if (g.jibLen > 0) { const ja = angDeg + g.jibAng; x += g.jibLen * Math.cos(rad(ja)); z += g.jibLen * Math.sin(rad(ja)); }
+  return { x, z, bx, bz };
+}
+function angleForRadius(g, L, R) {
+  const xmax = tipPos(g, L, g.minAng).x, xmin = tipPos(g, L, g.maxAng).x;
+  if (R > xmax + 1e-9) return { ok: false, ang: g.minAng, why: 'raio acima do alcance máximo da lança (' + fmt(xmax) + ' m)' };
+  if (R < xmin - 1e-9) return { ok: false, ang: g.maxAng, why: 'raio abaixo do alcance mínimo da lança (' + fmt(xmin) + ' m)' };
+  let lo = g.minAng, hi = g.maxAng;
+  for (let i = 0; i < 50; i++) { const mid = (lo + hi) / 2; if (tipPos(g, L, mid).x > R) lo = mid; else hi = mid; }
+  return { ok: true, ang: (lo + hi) / 2 };
+}
+/* capacidade conservadora: usa a primeira linha com raio >= R que tenha valor */
+function capAt(chart, col, R) {
+  const rows = [...chart.rows].sort((a, b) => a.r - b.r);
+  for (const row of rows) {
+    if (row.r >= R - 1e-9) { const v = row.caps[col]; if (v !== null && v !== undefined && v !== '' && !isNaN(v) && +v > 0) return +v; }
+  }
+  return null;
+}
+
+/* ---------- bibliotecas padrão (ILUSTRATIVAS — não são dados de fabricante) ---------- */
+function genTelescopic(name, Qmax, Mmax, booms, geom) {
+  const g = Object.assign({ pivotH: 3.2, pivotOff: 1.5, minAng: 15, maxAng: 80, jibLen: 0, jibAng: 0, tailR: 4.0, carrierL: 11, carrierW: 2.55, carrierH: 3.0 }, geom || {});
+  const base = [2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 44, 48];
+  const cols = booms.map(L => ({ label: fmt(L, 1) + ' m', L }));
+  const Lmin = booms[0], Lmax = booms[booms.length - 1];
+  const radii = new Set(base);
+  booms.forEach(L => radii.add(Math.ceil(tipPos(g, L, g.minAng).x * 2) / 2));
+  const rows = [...radii].sort((a, b) => a - b).map(r => ({
+    r, caps: booms.map(L => {
+      const rmin = tipPos(g, L, g.maxAng).x, rmax = Math.ceil(tipPos(g, L, g.minAng).x * 2) / 2;
+      if (r < rmin - 0.01 || r > rmax + 0.01) return null;
+      const M = Mmax * (1 - 0.45 * (L - Lmin) / Math.max(1, Lmax - Lmin));
+      return Math.max(0.1, Math.floor(Math.min(Qmax, M / r) * 20) / 20);
+    })
+  }));
+  return { id: uid(), name, type: 'telescopic', illustrative: true, geom: g,
+    configs: [{ name: 'Apoio total, contrapeso total (ILUSTRATIVO)', outSpanL: 6.5, outSpanB: 6.0, wTotal: Qmax * 0.9 + 12, chart: { cols, rows } }] };
+}
+function genMunck(name, Qmax, Mmax, exts, geom) {
+  const g = Object.assign({ pivotH: 2.4, pivotOff: 0.6, minAng: 0, maxAng: 80, jibLen: 0, jibAng: 0, tailR: 2.0, carrierL: 7.5, carrierW: 2.5, carrierH: 2.4 }, geom || {});
+  const cols = exts.map((L, i) => ({ label: 'E' + i + ' (' + fmt(L, 1) + ' m)', L }));
+  const radii = new Set([1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20]);
+  exts.forEach(L => radii.add(Math.ceil(tipPos(g, L, g.minAng).x * 2) / 2));
+  const rows = [...radii].sort((a, b) => a - b).map(r => ({
+    r, caps: exts.map((L, i) => {
+      const rmin = tipPos(g, L, g.maxAng).x, rmax = Math.ceil(tipPos(g, L, g.minAng).x * 2) / 2;
+      if (r < rmin - 0.01 || r > rmax + 0.01) return null;
+      const M = Mmax * (1 - 0.1 * i);
+      return Math.max(0.05, Math.floor(Math.min(Qmax, M / r) * 20) / 20);
+    })
+  }));
+  return { id: uid(), name, type: 'munck', illustrative: true, geom: g,
+    configs: [{ name: 'Estabilizadores abertos (ILUSTRATIVO)', outSpanL: 4.5, outSpanB: 5.5, wTotal: 11 + Qmax * 0.6, chart: { cols, rows } }] };
+}
+function defaultAccessories() {
+  const a = [];
+  [['Violeta', 1], ['Verde', 2], ['Amarela', 3], ['Cinza', 4], ['Vermelha', 5], ['Marrom', 6], ['Azul', 8], ['Laranja', 10]].forEach(([c, w]) => a.push({ id: uid(), type: 'cinta', name: 'Cinta poliéster ' + c + ' — ' + w + ' t (EN 1492-1)', wll: w }));
+  [[6, 1.12], [7, 1.5], [8, 2], [10, 3.15], [13, 5.3], [16, 8], [18, 10], [20, 12.5], [22, 15], [26, 21.2], [32, 31.5]].forEach(([d, w]) => a.push({ id: uid(), type: 'corrente', name: 'Corrente grau 80 Ø' + d + ' mm — ' + w + ' t (ref.)', wll: w }));
+  const tc = 0.9072;
+  [['3/8"', 1], ['1/2"', 2], ['5/8"', 3.25], ['3/4"', 4.75], ['7/8"', 6.5], ['1"', 8.5], ['1-1/8"', 9.5], ['1-1/4"', 12], ['1-3/8"', 13.5], ['1-1/2"', 17], ['1-3/4"', 25], ['2"', 35]]
+    .forEach(([d, w]) => a.push({ id: uid(), type: 'manilha', name: 'Manilha ' + d + ' — ' + w + ' tn curtas (ref. G-2130)', wll: +(w * tc).toFixed(2) }));
+  [6, 8, 10, 12, 14, 16, 19, 22, 26, 32].forEach(d => a.push({ id: uid(), type: 'cabo', name: 'Cabo de aço Ø' + d + ' mm — ESTIMATIVA d²/80 (usar certificado)', wll: +(d * d / 80).toFixed(2) }));
+  a.push({ id: uid(), type: 'cinta', name: 'Eslinga personalizada (informe WLL)', wll: 5 });
+  return a;
+}
+function defaultLibrary() {
+  return {
+    cranes: [
+      genTelescopic('Guindaste móvel genérico 30 t (ILUSTRATIVO)', 30, 100, [9.6, 14.5, 19, 23.5, 28], { pivotH: 2.9, tailR: 3.6, carrierL: 10 }),
+      genTelescopic('Guindaste móvel genérico 60 t (ILUSTRATIVO)', 60, 220, [11, 16, 21, 26, 31, 36, 40]),
+      genTelescopic('Guindaste móvel genérico 120 t (ILUSTRATIVO)', 120, 460, [13, 20, 27, 34, 41, 48, 55], { pivotH: 3.6, tailR: 5.2, carrierL: 13 }),
+      genMunck('Munck genérico 20 t·m (ILUSTRATIVO)', 6, 20, [3.2, 5.0, 6.8, 8.6, 10.4]),
+      genMunck('Munck genérico 45 t·m (ILUSTRATIVO)', 12, 45, [4.2, 6.4, 8.6, 10.8, 13.0], { pivotH: 2.6 })
+    ],
+    acc: defaultAccessories(),
+    manufacturers: [
+      ['Liebherr (guindastes móveis)', 'https://www.liebherr.com/en/int/products/mobile-and-crawler-cranes/mobile-cranes'],
+      ['Grove / Manitowoc', 'https://www.manitowoc.com/grove'],
+      ['Tadano', 'https://www.tadano.com/'],
+      ['Terex', 'https://www.terex.com/'],
+      ['Hiab (munck)', 'https://www.hiab.com/'],
+      ['Palfinger (munck)', 'https://www.palfinger.com/'],
+      ['Sany', 'https://www.sanyglobal.com/'],
+      ['XCMG', 'https://www.xcmg.com/']
+    ]
+  };
+}
+
+/* ---------- estado padrão ---------- */
+function defaultLift(lib, name) {
+  const c = lib.cranes[2];
+  return {
+    id: uid(), name: name || 'Içamento 1',
+    load: { name: 'Equipamento', w: 12, L: 4.0, B: 1.5, H: 1.2, cgx: 0, cgy: 0, cgz: 0.6 },
+    rigging: {
+      preset: '4', spanL: 3.0, spanB: 1.0, zAtt: 1.2, h: 2.6, minAng: 45,
+      pts: [{ x: -1.5, y: -0.5, z: 1.2 }, { x: 1.5, y: -0.5, z: 1.2 }, { x: 1.5, y: 0.5, z: 1.2 }, { x: -1.5, y: 0.5, z: 1.2 }],
+      slingId: lib.acc.find(a => a.name.startsWith('Cinta poliéster Azul')).id, mode: 'straight',
+      shackleId: lib.acc.find(a => a.name.startsWith('Manilha 1"')).id,
+      slingW: 0.05, shackleW: 0.04, blockW: 0.6, blockH: 1.5, hookCap: 50,
+      spreader: { use: false, len: 4, weight: 0.4, h: 2.5, lowerH: 1.5, capVert: 20, capComp: 150 }
+    },
+    crane: { id: c.id, cfg: 0, col: 1, x: 0, y: 0, zc: 0, carrierAng: 0, blockInChart: false, atb: 1.0 },
+    pick: { x: 10, y: 0, z: 0, phi: 0 },
+    place: { x: 12, y: 10, z: 3, phi: 90 },
+    travel: { auto: true, z: 6 },
+    obstacles: [{ name: 'Prédio existente', x: 8, y: 5, w: 6, d: 3, h: 7, rot: 0 }],
+    site: { dyn: 1.1, maxUtil: 80, wind: 5, windLimit: 9, cd: 1.2, areaAuto: true, area: 6, soilKpa: 200, padSide: 2.0, hMargin: 0.5, vMargin: 0.5, boomMargin: 1.0 }
+  };
+}
+function defaultState() {
+  const lib = defaultLibrary();
+  return { v: 1, project: { name: 'Projeto de içamento', local: '', client: '', resp: '', art: '', date: new Date().toISOString().slice(0, 10), rev: '0' },
+    lib, lifts: [defaultLift(lib)], cur: 0, checklist: {} };
+}
+
+/* =====================================================================
+   AVALIAÇÃO COMPLETA DE UM IÇAMENTO
+   ===================================================================== */
+function riggingPoints(lift) {
+  const R = lift.rigging, ld = lift.load, sx = R.spanL / 2, sy = R.spanB / 2, z = R.zAtt;
+  switch (R.preset) {
+    case '1': return [{ x: ld.cgx, y: ld.cgy, z }];
+    case '2L': return [{ x: -sx, y: 0, z }, { x: sx, y: 0, z }];
+    case '2B': return [{ x: 0, y: -sy, z }, { x: 0, y: sy, z }];
+    case '3': return [{ x: -sx, y: -sy, z }, { x: -sx, y: sy, z }, { x: sx, y: 0, z }];
+    case '4': return [{ x: -sx, y: -sy, z }, { x: sx, y: -sy, z }, { x: sx, y: sy, z }, { x: -sx, y: sy, z }];
+    default: return R.pts.map(p => ({ x: num(p.x), y: num(p.y), z: num(p.z, z) }));
+  }
+}
+const MODES = { straight: ['Direto (vertical)', 1.0], choke: ['Estrangulado (laço)', 0.8], basket: ['Cesto (por ramal)', 1.0] };
+
+function evaluate(lift, lib) {
+  const r = { checks: [], legs: [], samples: [], notes: [] };
+  const add = (id, label, status, value, limit, note) => r.checks.push({ id, label, status, value: value === undefined ? '' : value, limit: limit || '', note: note || '' });
+  const ld = lift.load, rg = lift.rigging, sp = rg.spreader, st = lift.site, cr = lift.crane;
+  const crane = lib.cranes.find(c => c.id === cr.id) || lib.cranes[0];
+  const cfg = crane.configs[Math.min(Math.max(0, cr.cfg), crane.configs.length - 1)];
+  const colI = Math.min(Math.max(0, cr.col), cfg.chart.cols.length - 1), col = cfg.chart.cols[colI];
+  const g = crane.geom; Object.assign(r, { crane, cfg, col, colI });
+  const dyn = num(st.dyn, 1), maxU = num(st.maxUtil, 80) / 100;
+  const fU = u => u > 1 ? 'fail' : (u > maxU ? 'warn' : 'ok');
+
+  /* ---- pesos ---- */
+  const Qrig = num(rg.slingW) + num(rg.shackleW) + (sp.use ? num(sp.weight) : 0);
+  const Qhook = ld.w + Qrig;
+  const Qgross = Qhook + (cr.blockInChart ? 0 : num(rg.blockW));
+  r.W = { load: ld.w, rig: Qrig, hook: Qhook, block: num(rg.blockW), gross: Qgross, design: Qgross * dyn, dyn };
+  const Qd = r.W.design;
+
+  /* ---- CG ---- */
+  if (ld.cgz > rg.zAtt + 1e-6) add('cg', 'Posição do CG', 'fail', 'CG acima dos olhais', 'CG abaixo do ponto de içamento', 'Carga instável: pode tombar ao ser içada.');
+  else add('cg', 'Posição do CG', 'ok', 'CG abaixo dos olhais', '');
+  if (Math.abs(ld.cgx) > ld.L / 2 + 1e-6 || Math.abs(ld.cgy) > ld.B / 2 + 1e-6) r.notes.push('CG fora do contorno da caixa da carga — confira as dimensões.');
+
+  /* ---- rigging: pernas ---- */
+  const pts = riggingPoints(lift), cg = { x: ld.cgx, y: ld.cgy };
+  const sling = lib.acc.find(a => a.id === rg.slingId) || { name: '—', wll: 0 };
+  const shackle = lib.acc.find(a => a.id === rg.shackleId) || { name: '—', wll: 0 };
+  const mode = MODES[rg.mode] || MODES.straight;
+  const wllSling = sling.wll * mode[1];
+  r.sling = sling; r.shackle = shackle; r.modeLabel = mode[0];
+  let rigH;
+  const Wleg = ld.w * dyn;
+  if (!sp.use) {
+    rigH = num(rg.h);
+    const geo = pts.map(p => { const dx = cg.x - p.x, dy = cg.y - p.y, dz = Math.max(0.01, rigH + (rg.zAtt - p.z)); const d = Math.hypot(dx, dy), L = Math.hypot(d, dz); return { d, L, sin: dz / L }; });
+    const ks = geo.map(q => q.sin * q.sin / q.L);
+    const D = distribute(pts, cg, Wleg, ks);
+    pts.forEach((p, i) => {
+      const V = D.V[i], T = V > 0 ? V / geo[i].sin : 0, ang = deg(Math.asin(geo[i].sin));
+      r.legs.push({ n: i + 1, grp: 'Perna', x: p.x, y: p.y, L: geo[i].L, ang, V, T, wll: wllSling, slack: D.slack[i], shackleOk: T <= shackle.wll });
+    });
+    r.stable = D.stable; r.ecc = D.ecc;
+    if (!D.stable) add('stab', 'Estabilidade da carga no gancho', 'fail', 'excentricidade ' + fmt(D.ecc * 100, 0) + ' cm', '< 3 cm', 'O CG não está dentro da configuração de pernas: a carga vai inclinar. Reposicione os pontos de içamento.');
+    else add('stab', 'Estabilidade da carga no gancho', 'ok', 'estável', '');
+    if (D.slack.some(Boolean)) r.notes.push('Há perna(s) frouxa(s) (sem carga) — apenas as demais sustentam a carga; confirme se é intencional.');
+    const angs = r.legs.filter(l => !l.slack).map(l => l.ang), minAng = angs.length ? Math.min(...angs) : 90;
+    add('ang', 'Ângulo mínimo das eslingas (com a horizontal)', minAng < num(rg.minAng, 45) ? 'fail' : (minAng < 60 ? 'warn' : 'ok'), fmt(minAng, 1) + '°', '≥ ' + fmt(num(rg.minAng, 45), 0) + '° (ideal ≥ 60°)', 'Ângulos baixos multiplicam a tensão e comprimem a carga.');
+  } else {
+    /* balancim: pernas inferiores verticais + 2 superiores até o gancho */
+    const Wb = num(sp.weight), Wt = ld.w * dyn + Wb * dyn;
+    const lowerH = Math.max(0.1, num(sp.lowerH, 1.5));
+    rigH = lowerH + num(sp.h);
+    const ksL = pts.map(() => 1 / lowerH);
+    const D = distribute(pts, cg, Wleg, ksL);
+    pts.forEach((p, i) => { const V = D.V[i]; r.legs.push({ n: i + 1, grp: 'Inferior', x: p.x, y: p.y, L: lowerH, ang: 90, V, T: V, wll: wllSling, slack: D.slack[i], shackleOk: V <= shackle.wll }); });
+    const ex = (ld.w * cg.x) / (ld.w + Wb || 1), half = sp.len / 2, hh = Math.max(0.05, num(sp.h));
+    const VL = Wt * (half - ex) / sp.len, VR = Wt * (half + ex) / sp.len;
+    const dL = half + ex, dR = half - ex;
+    [['Superior E', VL, dL], ['Superior D', VR, dR]].forEach(([nm, V, d], k) => {
+      const L = Math.hypot(d, hh), sin = hh / L, T = V / sin;
+      r.legs.push({ n: pts.length + k + 1, grp: nm, x: k ? half : -half, y: 0, L, ang: deg(Math.asin(sin)), V, T, wll: wllSling, slack: false, shackleOk: T <= shackle.wll });
+    });
+    const comp = VL * dL / hh;
+    r.spreaderComp = comp;
+    add('sp-v', 'Balancim — capacidade vertical', Wt > sp.capVert ? 'fail' : (Wt > sp.capVert * maxU ? 'warn' : 'ok'), fmt(Wt) + ' t', '≤ ' + fmt(sp.capVert) + ' t');
+    add('sp-c', 'Balancim — compressão axial', comp * G > sp.capComp ? 'fail' : (comp * G > sp.capComp * maxU ? 'warn' : 'ok'), fmt(comp * G, 1) + ' kN', '≤ ' + fmt(sp.capComp, 0) + ' kN', 'Compressão = H do esforço nas eslingas superiores.');
+    if (Math.abs(cg.y) > 0.05) r.notes.push('CG fora do eixo do balancim (cgy ≠ 0): gire o balancim para alinhar ao CG.');
+    r.stable = D.stable; r.ecc = D.ecc;
+    if (!D.stable) add('stab', 'Estabilidade da carga no balancim', 'fail', 'excentricidade ' + fmt(D.ecc * 100, 0) + ' cm', '< 3 cm', 'Pontos inferiores não envolvem o CG.');
+    else add('stab', 'Estabilidade da carga no balancim', 'ok', 'estável', '');
+    const sa = r.legs.filter(l => l.grp.startsWith('Superior')).map(l => l.ang), mn = Math.min(...sa);
+    add('ang', 'Ângulo das eslingas superiores', mn < num(rg.minAng, 45) ? 'fail' : (mn < 60 ? 'warn' : 'ok'), fmt(mn, 1) + '°', '≥ ' + fmt(num(rg.minAng, 45), 0) + '° (ideal ≥ 60°)');
+  }
+  r.rigH = rigH;
+  const maxT = Math.max(0, ...r.legs.map(l => l.T)), maxUtilSling = Math.max(0, ...r.legs.map(l => l.wll ? l.T / l.wll : 99));
+  r.maxT = maxT; r.maxUtilSling = maxUtilSling;
+  add('sling', 'Eslingas — maior tensão × WLL (' + sling.name.split('—')[0].trim() + ', ' + mode[0] + ')', fU(maxUtilSling), fmt(maxT) + ' t (' + fmt(maxT * G, 1) + ' kN) → ' + fmt(maxUtilSling * 100, 0) + '%', 'WLL ' + fmt(wllSling) + ' t', 'Confira com o certificado da eslinga. Cantos vivos exigem protetores.');
+  const maxUs = Math.max(0, ...r.legs.map(l => shackle.wll ? l.T / shackle.wll : 99));
+  add('shk', 'Manilhas — maior tensão × WLL', fU(maxUs), fmt(maxUs * 100, 0) + '%', 'WLL ' + fmt(shackle.wll) + ' t (' + shackle.name.split('—')[0].trim() + ')');
+  add('hook', 'Moitão / gancho — carga total × capacidade', fU(Qgross / num(rg.hookCap, 1e9)), fmt(Qgross) + ' t', '≤ ' + fmt(rg.hookCap) + ' t');
+
+  /* ---- vento ---- */
+  const area = st.areaAuto ? ld.L * ld.H : num(st.area);
+  const Fw = 0.5 * 1.225 * st.wind * st.wind * st.cd * area / 1000;
+  r.wind = { area, F: Fw, pend: deg(Math.atan(Fw / (ld.w * G))) };
+  add('wind', 'Vento na operação', st.wind > st.windLimit ? 'fail' : (st.wind > 0.8 * st.windLimit ? 'warn' : 'ok'), fmt(st.wind, 1) + ' m/s (' + fmt(st.wind * 3.6, 0) + ' km/h) — F=' + fmt(Fw, 2) + ' kN, pêndulo ' + fmt(r.wind.pend, 1) + '°', '≤ ' + fmt(st.windLimit, 1) + ' m/s', 'Use o limite do manual do guindaste. Área projetada da carga: ' + fmt(area, 1) + ' m².');
+
+  /* ---- contexto geométrico ---- */
+  const C = { x: cr.x, y: cr.y };
+  const obs = lift.obstacles.map(o => ({ o, poly: obb(o.x, o.y, o.w, o.d, o.rot || 0), polyM: obb(o.x, o.y, o.w + 2 * st.hMargin, o.d + 2 * st.hMargin, o.rot || 0) }));
+  const needAbove = rigH + num(rg.blockH) + num(cr.atb);
+  const carrier = a => [[-cfg.outSpanL / 2, -cfg.outSpanB / 2], [cfg.outSpanL / 2, -cfg.outSpanB / 2], [cfg.outSpanL / 2, cfg.outSpanB / 2], [-cfg.outSpanL / 2, cfg.outSpanB / 2]]
+    .map(([x, y]) => ({ x: x * Math.cos(a) - y * Math.sin(a), y: x * Math.sin(a) + y * Math.cos(a) }));
+  const outLegs = carrier(0);
+
+  function loadPoly(x, y, phi, margin) { // x,y = projeção do gancho/CG
+    const c = Math.cos(rad(phi)), s = Math.sin(rad(phi));
+    const cx = x - (ld.cgx * c - ld.cgy * s), cy = y - (ld.cgx * s + ld.cgy * c);
+    return obb(cx, cy, ld.L + 2 * margin, ld.B + 2 * margin, phi);
+  }
+  function sampleAt(x, y, z, phi) {
+    const R = Math.hypot(x - C.x, y - C.y), az = Math.atan2(y - C.y, x - C.x);
+    const s = { x, y, z, phi, R, az };
+    const A = angleForRadius(g, col.L, R); s.ang = A.ang; s.angOk = A.ok; s.angWhy = A.why;
+    const T = tipPos(g, col.L, A.ang); s.tip = T;
+    s.cap = capAt(cfg.chart, colI, R); s.util = s.cap ? Qd / s.cap : null;
+    s.tipAbs = cr.zc + T.z; s.needTip = z + rg.zAtt + needAbove; s.hMargin = s.tipAbs - s.needTip;
+    // lança × obstáculos
+    s.boomClear = null;
+    const p1 = { x, y };
+    obs.forEach(ob => {
+      const t = clipSeg(C, p1, ob.poly); if (!t) return;
+      const d1 = t[0] * R, d2 = t[1] * R;
+      [d1, d2].forEach(sv => {
+        if (sv < T.bx - 1e-9 - 0 && sv < g.pivotOff) return;
+        const sc = Math.min(Math.max(sv, g.pivotOff), T.x);
+        const zb = cr.zc + g.pivotH + (T.z - g.pivotH) * ((sc - g.pivotOff) / Math.max(1e-6, T.x - g.pivotOff));
+        const cl = zb - ob.o.h; if (s.boomClear === null || cl < s.boomClear) s.boomClear = cl;
+      });
+    });
+    // carga × obstáculos
+    s.coll = null;
+    const LP = loadPoly(x, y, phi, st.hMargin);
+    obs.forEach(ob => { if (z < ob.o.h + st.vMargin && satOverlap(LP, ob.poly)) s.coll = ob.o.name; });
+    // reações dos estabilizadores
+    const a = -rad(cr.carrierAng), dx = x - C.x, dy = y - C.y, lx = dx * Math.cos(a) - dy * Math.sin(a), ly = dx * Math.sin(a) + dy * Math.cos(a);
+    const Wc = cfg.wTotal, Wt = Wc + Qd, gc = { x: Qd * lx / Wt, y: Qd * ly / Wt };
+    const Dg = distribute(outLegs, gc, Wt, [1, 1, 1, 1]);
+    s.out = Dg.V; s.outMax = Math.max(...Dg.V); s.outMin = Math.min(...Dg.V); s.outLift = Dg.slack.some(Boolean);
+    return s;
+  }
+
+  /* ---- trajetória ---- */
+  const P = lift.pick, Q = lift.place;
+  let zT = num(lift.travel.z);
+  if (lift.travel.auto) {
+    zT = Math.max(P.z, Q.z);
+    for (let k = 0; k < 400; k++, zT += 0.25) {
+      let hit = false;
+      for (let i = 0; i <= 20 && !hit; i++) {
+        const t = i / 20, LP = loadPoly(P.x + (Q.x - P.x) * t, P.y + (Q.y - P.y) * t, P.phi + (Q.phi - P.phi) * t, st.hMargin);
+        obs.forEach(ob => { if (zT < ob.o.h + st.vMargin && satOverlap(LP, ob.poly)) hit = true; });
+      }
+      if (!hit) break;
+    }
+  }
+  zT = Math.max(zT, P.z, Q.z); r.zTravel = zT;
+  const way = [{ x: P.x, y: P.y, z: P.z, phi: P.phi }, { x: P.x, y: P.y, z: zT, phi: P.phi }, { x: Q.x, y: Q.y, z: zT, phi: Q.phi }, { x: Q.x, y: Q.y, z: Q.z, phi: Q.phi }];
+  r.way = way; let dist = 0;
+  for (let i = 0; i < 3; i++) {
+    const a = way[i], b = way[i + 1], len = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z), n = Math.max(1, Math.ceil(len / 0.5));
+    for (let k = (i ? 1 : 0); k <= n; k++) {
+      const t = k / n, s = sampleAt(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.phi + (b.phi - a.phi) * t);
+      s.dist = dist + len * t; r.samples.push(s);
+    }
+    dist += len;
+  }
+  r.pathLen = dist;
+  r.pickS = r.samples[0]; r.placeS = r.samples[r.samples.length - 1];
+
+  /* ---- verificações do guindaste ---- */
+  const S = r.samples;
+  const bad = S.find(s => !s.angOk);
+  add('reach', 'Alcance da lança no percurso (raio × ângulo)', bad ? 'fail' : 'ok',
+    bad ? 'raio ' + fmt(bad.R) + ' m — ' + bad.angWhy : 'raio ' + fmt(Math.min(...S.map(s => s.R))) + ' a ' + fmt(Math.max(...S.map(s => s.R))) + ' m',
+    'ângulo da lança ' + fmt(g.minAng, 0) + '° a ' + fmt(g.maxAng, 0) + '°');
+  const out = S.find(s => s.cap === null);
+  if (out) add('chart', 'Raio dentro da tabela de carga', 'fail', 'sem capacidade na tabela para R = ' + fmt(out.R) + ' m', 'coluna ' + col.label);
+  const uMax = Math.max(...S.filter(s => s.util !== null).map(s => s.util), 0);
+  const sMax = S.filter(s => s.util !== null).sort((a, b) => b.util - a.util)[0];
+  r.uMax = uMax; r.sMax = sMax;
+  if (!out) add('cap', 'Capacidade do guindaste (pior ponto do percurso)', fU(uMax), fmt(Qd) + ' t de ' + fmt(sMax.cap) + ' t em R=' + fmt(sMax.R) + ' m → ' + fmt(uMax * 100, 0) + '%', '≤ ' + fmt(maxU * 100, 0) + '% (100% = limite da tabela)', 'Carga de cálculo = (carga + rigging' + (cr.blockInChart ? '' : ' + moitão') + ') × fator dinâmico ' + fmt(dyn, 2) + '.');
+  const hm = Math.min(...S.map(s => s.hMargin)), sh = S.reduce((a, b) => b.hMargin < a.hMargin ? b : a);
+  add('height', 'Altura sob a ponta da lança (carga + eslingas + moitão + anti-two-block)', hm < 0 ? 'fail' : (hm < 0.5 ? 'warn' : 'ok'), 'folga mínima ' + fmt(hm) + ' m (R=' + fmt(sh.R) + ' m, z=' + fmt(sh.z) + ' m)', '≥ 0,5 m', 'Altura necessária acima da base da carga: ' + fmt(rg.zAtt + needAbove) + ' m.');
+  const bcs = S.filter(s => s.boomClear !== null);
+  if (obs.length) {
+    const bc = bcs.length ? Math.min(...bcs.map(s => s.boomClear)) : null;
+    add('boom', 'Folga da lança sobre obstáculos', bc === null ? 'ok' : (bc < 0 ? 'fail' : (bc < st.boomMargin ? 'warn' : 'ok')), bc === null ? 'lança não cruza obstáculos' : fmt(bc) + ' m', '≥ ' + fmt(st.boomMargin) + ' m');
+    const col1 = S.find(s => s.coll);
+    add('coll', 'Colisão da carga com obstáculos no percurso', col1 ? 'fail' : 'ok', col1 ? 'colide com "' + col1.coll + '" (z=' + fmt(col1.z) + ' m)' : 'sem colisão', 'margem ' + fmt(st.hMargin) + ' m horiz. / ' + fmt(st.vMargin) + ' m vert.');
+    const tails = obs.filter(ob => distPointPoly(C, ob.poly) < g.tailR + st.hMargin);
+    if (tails.length) add('tail', 'Giro da traseira do guindaste (raio ' + fmt(g.tailR) + ' m)', 'warn', 'invade: ' + tails.map(t => t.o.name).join(', '), 'área de giro livre', 'Isole a área ou limite o giro.');
+  }
+  /* ---- solo ---- */
+  const oM = Math.max(...S.map(s => s.outMax)), oLift = S.find(s => s.outLift);
+  const pad = num(st.padSide, 1), press = oM * G / (pad * pad), need = Math.sqrt(oM * G / Math.max(1, st.soilKpa));
+  r.ground = { outMax: oM, press, need, pad, lift: !!oLift };
+  add('ground', 'Solo sob o estabilizador mais carregado (estimativa)', oLift ? 'fail' : fU(press / st.soilKpa), fmt(oM * G, 0) + ' kN → ' + fmt(press, 0) + ' kPa (sapata ' + fmt(pad, 2) + '×' + fmt(pad, 2) + ' m)', '≤ ' + fmt(st.soilKpa, 0) + ' kPa; sapata mín. ' + fmt(need, 2) + ' m',
+    oLift ? 'Estabilizador tende a levantar: risco de tombamento.' : 'Estimativa de corpo rígido — use as reações oficiais do manual do guindaste.');
+
+  /* ---- resultado geral ---- */
+  const sev = { fail: 3, warn: 2, ok: 1, info: 0 };
+  r.worst = r.checks.reduce((m, c) => Math.max(m, sev[c.status]), 0);
+  r.verdict = r.worst >= 3 ? 'fail' : r.worst === 2 ? 'warn' : 'ok';
+  const craneIds = ['reach', 'chart', 'cap', 'height', 'boom', 'coll'];
+  r.craneFail = r.checks.some(c => craneIds.includes(c.id) && c.status === 'fail');
+  r.craneWarn = r.checks.some(c => craneIds.includes(c.id) && c.status === 'warn');
+  r.Rmax = tipPos(g, col.L, g.minAng).x; r.Rmin = tipPos(g, col.L, g.maxAng).x;
+  return r;
+}
+
+/* busca automática: testa guindaste × configuração × coluna da biblioteca */
+function optimize(lift, lib) {
+  const out = [];
+  lib.cranes.forEach(c => c.configs.forEach((cfg, ci) => cfg.chart.cols.forEach((col, ki) => {
+    const l = clone(lift); l.crane.id = c.id; l.crane.cfg = ci; l.crane.col = ki;
+    let r; try { r = evaluate(l, lib); } catch (e) { return; }
+    if (!r.craneFail) out.push({ crane: c, ci, ki, label: col.label, L: col.L, u: r.uMax, warn: r.craneWarn, verdict: r.verdict });
+  })));
+  return out.sort((a, b) => (a.warn - b.warn) || (a.u - b.u) || (a.L - b.L));
+}
+
+/* leitura de tabela colada (CSV/Excel): 1ª linha = "raio;L1;L2..." */
+function parseChart(text) {
+  const lines = text.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if (lines.length < 2) throw new Error('Cole ao menos 2 linhas.');
+  const delim = lines[0].includes('\t') ? '\t' : lines[0].includes(';') ? ';' : ',';
+  const split = l => l.split(delim).map(s => s.trim());
+  const n = s => { if (s === '' || s === '-' || s === '—') return null; const v = parseFloat(String(s).replace(',', '.')); return isNaN(v) ? null : v; };
+  const head = split(lines[0]).slice(1).map(n);
+  if (!head.length || head.some(v => v === null)) throw new Error('Cabeçalho inválido: use "raio;comprimento1;comprimento2;..."');
+  const cols = head.map(L => ({ label: fmt(L, 1) + ' m', L }));
+  const rows = lines.slice(1).map(l => { const p = split(l); const r = n(p[0]); if (r === null) throw new Error('Raio inválido: ' + p[0]); return { r, caps: head.map((_, i) => n(p[i + 1])) }; }).sort((a, b) => a.r - b.r);
+  return { cols, rows };
+}
+</script>
+<script>
+/* =====================================================================
+   APLICAÇÃO — estado, formulários, desenho, relatório
+   ===================================================================== */
+const KEY = 'rigplan.v1';
+let S = null, RES = null, ACTIVE = 'scene', SAVE_T = null;
+const lift = () => S.lifts[S.cur];
+const esc = s => String(s === null || s === undefined ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = id => document.getElementById(id);
+
+function load() {
+  try { const t = localStorage.getItem(KEY); if (t) { const o = JSON.parse(t); if (o && o.lib && o.lifts && o.lifts.length) return o; } } catch (e) { }
+  return defaultState();
+}
+function save() {
+  clearTimeout(SAVE_T);
+  SAVE_T = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(S)); $('saveInfo').textContent = 'salvo automaticamente neste navegador ' + new Date().toLocaleTimeString('pt-BR'); } catch (e) { $('saveInfo').textContent = 'não foi possível salvar no navegador — use Exportar'; } }, 400);
+}
+
+/* ---------- acesso por caminho ---------- */
+function rootOf(path) {
+  if (path.startsWith('lib.')) return [S.lib, path.slice(4)];
+  if (path.startsWith('P.')) return [S.project, path.slice(2)];
+  return [lift(), path];
+}
+const getp = path => { const [o, p] = rootOf(path); return p.split('.').reduce((a, k) => a == null ? a : a[k], o); };
+function setp(path, v) { const [o, p] = rootOf(path); const ks = p.split('.'), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; }
+
+/* ---------- campos de formulário ---------- */
+function fld(label, path, o = {}) {
+  const v = getp(path), t = o.type || 'number', re = o.re ? ` data-re="${o.re}"` : '';
+  const unit = o.unit ? ` <small>(${o.unit})</small>` : '';
+  if (t === 'check') return `<label class="f chk"><input type="checkbox" data-path="${path}" data-type="check"${re}${v ? ' checked' : ''}> ${label}</label>`;
+  if (t === 'select') return `<label class="f"><span>${label}${unit}</span><select data-path="${path}" data-type="${o.int ? 'int' : 'text'}"${re}>${o.opts.map(([val, lb]) => `<option value="${esc(val)}"${String(val) === String(v) ? ' selected' : ''}>${esc(lb)}</option>`).join('')}</select></label>`;
+  if (t === 'text' || t === 'date') return `<label class="f"><span>${label}</span><input type="${t}" data-path="${path}" data-type="text" value="${esc(v)}"${re}></label>`;
+  return `<label class="f"><span>${label}${unit}</span><input type="number" step="${o.step || 'any'}" data-path="${path}" data-type="number" value="${v === null || v === undefined ? '' : v}"${re}></label>`;
+}
+function onEdit(e) {
+  const el = e.target, p = el.dataset && el.dataset.path; if (!p) return;
+  const t = el.dataset.type;
+  if (e.type === 'input' && (el.tagName === 'SELECT' || t === 'check')) return;
+  let v;
+  if (t === 'check') v = el.checked;
+  else if (t === 'number') { if (el.value === '') v = el.dataset.null ? null : 0; else { v = parseFloat(el.value); if (isNaN(v)) return; } }
+  else if (t === 'int') v = parseInt(el.value, 10);
+  else v = el.value;
+  setp(p, v);
+  if (el.dataset.re && e.type === 'change') renderTab(el.dataset.re);
+  refresh();
+}
+document.addEventListener('input', onEdit);
+document.addEventListener('change', onEdit);
+
+function syncInputs() {
+  document.querySelectorAll('[data-path]').forEach(el => {
+    if (el === document.activeElement || el.dataset.type === 'check') return;
+    const v = getp(el.dataset.path); if (v !== undefined && v !== null && String(el.value) !== String(v)) el.value = v;
+  });
+}
+
+/* ---------- abas ---------- */
+const TABS = [['scene', 'Cena e simulação'], ['load', 'Carga'], ['rig', 'Rigging'], ['crane', 'Guindaste / Munck'], ['site', 'Local, solo e vento'], ['lib', 'Biblioteca'], ['check', 'Checklist'], ['report', 'Relatório']];
+function renderTabs() {
+  $('tabs').innerHTML = TABS.map(([k, n]) => `<button data-tab="${k}" class="${k === ACTIVE ? 'on' : ''}">${n}</button>`).join('');
+  TABS.forEach(([k]) => $('tab-' + k).classList.toggle('on', k === ACTIVE));
+}
+$('tabs').addEventListener('click', e => { const k = e.target.dataset.tab; if (!k) return; ACTIVE = k; renderTabs(); renderTab(k); if (k === 'scene') setTimeout(drawAll, 0); });
+function renderTab(k) {
+  ({ scene: renderSceneForms, load: renderLoad, rig: renderRig, crane: renderCrane, site: renderSite, lib: renderLib, check: renderCheck, report: renderReport })[k]();
+  if (k === 'rig') updateRigResult();
+  if (k === 'crane') updateCraneChart();
+}
+function renderAll() { renderLifts(); renderTabs(); TABS.forEach(([k]) => { if (k !== 'scene') renderTab(k); }); renderSceneForms(); refresh(); }
+
+/* ---------- lista de içamentos ---------- */
+function renderLifts() {
+  $('liftList').innerHTML = S.lifts.map((l, i) => `<div class="item ${i === S.cur ? 'sel' : ''}" data-i="${i}"><span>${esc(l.name)}</span></div>`).join('');
+}
+$('liftList').addEventListener('click', e => { const it = e.target.closest('.item'); if (!it) return; S.cur = +it.dataset.i; renderAll(); setTimeout(() => { fitPlan(); drawAll(); }, 0); });
+$('bAddLift').onclick = () => { const l = defaultLift(S.lib, 'Içamento ' + (S.lifts.length + 1)); S.lifts.push(l); S.cur = S.lifts.length - 1; renderAll(); };
+$('bDupLift').onclick = () => { const l = clone(lift()); l.id = uid(); l.name += ' (cópia)'; S.lifts.push(l); S.cur = S.lifts.length - 1; renderAll(); };
+$('bDelLift').onclick = () => { if (S.lifts.length < 2) return alert('Mantenha ao menos um içamento.'); if (!confirm('Excluir "' + lift().name + '"?')) return; S.lifts.splice(S.cur, 1); S.cur = Math.max(0, S.cur - 1); renderAll(); };
+$('bNew').onclick = () => { if (!confirm('Descartar o projeto atual e começar um novo? (exporte antes se quiser guardar)')) return; S = defaultState(); renderAll(); fitPlan(); };
+$('bSave').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' })); a.download = (S.project.name || 'projeto').replace(/[^\w\-]+/g, '_') + '.json'; a.click(); };
+$('fOpen').onchange = e => { const f = e.target.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { try { const o = JSON.parse(rd.result); if (!o.lib || !o.lifts) throw 0; S = o; S.cur = 0; renderAll(); fitPlan(); } catch (x) { alert('Arquivo inválido.'); } }; rd.readAsText(f); e.target.value = ''; };
+$('bPrint').onclick = () => { ACTIVE = 'report'; renderTabs(); renderReport(); setTimeout(() => window.print(), 200); };
+
+/* =====================================================================
+   ABA: CENA
+   ===================================================================== */
+const VIEW = { scale: 20, ox: 0, oy: 0, pos: 'place', t: 1, anim: false };
+function buildScene() {
+  $('tab-scene').innerHTML = `
+  <div class="tools">
+    <button class="btn2" id="bFit">Ajustar vista</button>
+    <button class="btn2 pri" id="bPlay">▶ Simular içamento</button>
+    <label class="f" style="flex-direction:row;align-items:center;gap:6px">Elevação mostra:
+      <select id="selPos"><option value="pick">Origem</option><option value="place" selected>Destino</option><option value="t">Trajetória (slider)</option></select></label>
+    <input type="range" id="sliderT" min="0" max="1000" value="1000" style="width:200px">
+    <span id="posInfo" class="note"></span>
+  </div>
+  <div class="cvs"><div><b>Planta</b> <span class="note">— arraste guindaste, origem, destino e obstáculos; roda do mouse = zoom; arraste o fundo = mover</span><canvas class="view" id="cvPlan"></canvas></div>
+  <div><b>Elevação</b> <span class="note">— corte vertical na linha guindaste → carga</span><canvas class="view" id="cvElev"></canvas></div></div>
+  <div id="sceneForms"></div>`;
+  $('bFit').onclick = () => { fitPlan(); drawAll(); };
+  $('selPos').onchange = e => { VIEW.pos = e.target.value; drawAll(); };
+  $('sliderT').oninput = e => { VIEW.t = e.target.value / 1000; $('selPos').value = 't'; VIEW.pos = 't'; drawAll(); };
+  $('bPlay').onclick = playAnim;
+  bindPlan();
+}
+function renderSceneForms() {
+  const l = lift();
+  $('sceneForms').innerHTML = `
+  <fieldset><legend>Identificação do içamento</legend><div class="grid">${fld('Nome do içamento', 'name', { type: 'text', re: 'scene' })}</div></fieldset>
+  <fieldset><legend>Posições da carga (projeção do gancho / CG, em metros no plano; z = elevação da base da carga)</legend>
+   <div class="grid">
+    ${fld('Origem X', 'pick.x', { unit: 'm' })}${fld('Origem Y', 'pick.y', { unit: 'm' })}${fld('Origem z (base)', 'pick.z', { unit: 'm' })}${fld('Origem giro da carga', 'pick.phi', { unit: '°' })}
+    ${fld('Destino X', 'place.x', { unit: 'm' })}${fld('Destino Y', 'place.y', { unit: 'm' })}${fld('Destino z (base)', 'place.z', { unit: 'm' })}${fld('Destino giro da carga', 'place.phi', { unit: '°' })}
+    ${fld('Altura de travessia automática', 'travel.auto', { type: 'check', re: 'scene' })}
+    ${l.travel.auto ? '' : fld('Altura de travessia (base da carga)', 'travel.z', { unit: 'm' })}
+   </div>
+   <p class="note">Trajetória: sobe na vertical até a altura de travessia, desloca na horizontal (giro linear da carga) e desce na vertical. Em automático, a altura é a menor sem colisão com os obstáculos.</p></fieldset>
+  <fieldset><legend>Obstáculos (planta retangular; "topo" = cota do topo em relação ao piso z=0)</legend>
+   <table><tr><th>Nome</th><th>X</th><th>Y</th><th>Largura</th><th>Profund.</th><th>Giro °</th><th>Topo z</th><th></th></tr>
+   ${l.obstacles.map((o, i) => `<tr><td><input class="w" data-path="obstacles.${i}.name" data-type="text" value="${esc(o.name)}"></td>
+     ${['x', 'y', 'w', 'd', 'rot', 'h'].map(k => `<td><input type="number" step="any" data-path="obstacles.${i}.${k}" data-type="number" value="${o[k]}"></td>`).join('')}
+     <td><button class="btn2 del" data-delobs="${i}">✕</button></td></tr>`).join('')}</table>
+   <div class="tools"><button class="btn2" id="bAddObs">+ Obstáculo</button></div></fieldset>`;
+  $('bAddObs').onclick = () => { lift().obstacles.push({ name: 'Obstáculo ' + (lift().obstacles.length + 1), x: 5, y: 5, w: 3, d: 3, h: 4, rot: 0 }); renderSceneForms(); refresh(); };
+  $('sceneForms').querySelectorAll('[data-delobs]').forEach(b => b.onclick = () => { lift().obstacles.splice(+b.dataset.delobs, 1); renderSceneForms(); refresh(); });
+}
+
+/* ---------- planta: transformação ---------- */
+const w2s = (x, y) => ({ x: VIEW.ox + x * VIEW.scale, y: VIEW.oy - y * VIEW.scale });
+const s2w = (px, py) => ({ x: (px - VIEW.ox) / VIEW.scale, y: (VIEW.oy - py) / VIEW.scale });
+function sizeCanvas(cv) {
+  const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+  const w = Math.max(10, Math.round(r.width * d)), h = Math.max(10, Math.round(r.height * d));
+  if (cv.width !== w || cv.height !== h) { cv.width = w; cv.height = h; }
+  const c = cv.getContext('2d'); c.setTransform(d, 0, 0, d, 0, 0); return { c, w: r.width, h: r.height };
+}
+function fitPlan(cv, res) {
+  cv = cv || $('cvPlan'); res = res || RES; if (!cv || !res) return;
+  const r = cv.getBoundingClientRect(), W = r.width || 800, H = r.height || 400, l = lift(), g = res.crane.geom;
+  const xs = [l.crane.x - g.tailR, l.crane.x + g.tailR], ys = [l.crane.y - g.tailR, l.crane.y + g.tailR];
+  const addP = P => P.forEach(p => { xs.push(p.x); ys.push(p.y); });
+  [l.pick, l.place].forEach(p => addP(obb(p.x, p.y, l.load.L, l.load.B, p.phi)));
+  l.obstacles.forEach(o => addP(obb(o.x, o.y, o.w, o.d, o.rot || 0)));
+  const x0 = Math.min(...xs) - 2, x1 = Math.max(...xs) + 2, y0 = Math.min(...ys) - 2, y1 = Math.max(...ys) + 2;
+  VIEW.scale = Math.min(W / (x1 - x0), H / (y1 - y0)); VIEW.ox = (W - (x1 - x0) * VIEW.scale) / 2 - x0 * VIEW.scale; VIEW.oy = H - (H - (y1 - y0) * VIEW.scale) / 2 + y0 * VIEW.scale;
+}
+const stCol = s => s === 'fail' ? '#b91c1c' : s === 'warn' ? '#b45309' : '#15803d';
+const utilCol = u => u === null ? '#b91c1c' : u > 1 ? '#b91c1c' : u > lift().site.maxUtil / 100 ? '#b45309' : '#15803d';
+
+function samplePos(res) {
+  const S_ = res.samples; if (VIEW.pos === 'pick') return S_[0]; if (VIEW.pos === 'place') return S_[S_.length - 1];
+  const d = VIEW.t * res.pathLen; let best = S_[0]; for (const s of S_) { if (s.dist <= d) best = s; else break; } return best;
+}
+function drawPlan(cv, res, fit) {
+  if (!res) return;
+  const { c, w, h } = fit ? { c: cv.getContext('2d'), w: cv.width, h: cv.height } : sizeCanvas(cv);
+  c.fillStyle = '#fff'; c.fillRect(0, 0, w, h);
+  const l = lift(), g = res.crane.geom, cfg = res.cfg, P = (x, y) => w2s(x, y);
+  // grade
+  const steps = [0.5, 1, 2, 5, 10, 20, 50, 100]; const st = steps.find(s => s * VIEW.scale >= 40) || 100;
+  const tl = s2w(0, 0), br = s2w(w, h);
+  c.lineWidth = 1; c.strokeStyle = '#eef0f3'; c.fillStyle = '#9ca3af'; c.font = '10px sans-serif';
+  for (let x = Math.ceil(tl.x / st) * st; x < br.x; x += st) { const p = P(x, 0); c.beginPath(); c.moveTo(p.x, 0); c.lineTo(p.x, h); c.stroke(); c.fillText(+x.toFixed(2), p.x + 2, h - 3); }
+  for (let y = Math.ceil(br.y / st) * st; y < tl.y; y += st) { const p = P(0, y); c.beginPath(); c.moveTo(0, p.y); c.lineTo(w, p.y); c.stroke(); c.fillText(+y.toFixed(2), 2, p.y - 2); }
+  const poly = (pts, fill, stroke, dash) => { c.beginPath(); pts.forEach((q, i) => { const s = P(q.x, q.y); i ? c.lineTo(s.x, s.y) : c.moveTo(s.x, s.y); }); c.closePath(); if (fill) { c.fillStyle = fill; c.fill(); } if (stroke) { c.setLineDash(dash || []); c.strokeStyle = stroke; c.lineWidth = 1.5; c.stroke(); c.setLineDash([]); } };
+  const circle = (x, y, r, stroke, dash, fill) => { const s = P(x, y); c.beginPath(); c.arc(s.x, s.y, r * VIEW.scale, 0, 7); if (fill) { c.fillStyle = fill; c.fill(); } c.setLineDash(dash || []); c.strokeStyle = stroke; c.lineWidth = 1; c.stroke(); c.setLineDash([]); };
+  const text = (t, x, y, col, off) => { const s = P(x, y); c.fillStyle = col || '#111827'; c.font = '11px sans-serif'; c.fillText(t, s.x + (off ? off[0] : 4), s.y + (off ? off[1] : -4)); };
+  // obstáculos
+  l.obstacles.forEach(o => { poly(obb(o.x, o.y, o.w, o.d, o.rot || 0), 'rgba(148,163,184,.55)', '#475569'); text(o.name + ' (z ' + fmt(o.h, 1) + ')', o.x - o.w / 2, o.y + o.d / 2, '#334155'); });
+  // alcance
+  circle(l.crane.x, l.crane.y, res.Rmax, '#93c5fd', [6, 4]); circle(l.crane.x, l.crane.y, res.Rmin, '#93c5fd', [6, 4]); circle(l.crane.x, l.crane.y, g.tailR, '#fca5a5', [3, 3]);
+  // guindaste
+  const a = rad(l.crane.carrierAng), cc = Math.cos(a), ss = Math.sin(a);
+  poly([[-g.carrierL / 2, -g.carrierW / 2], [g.carrierL / 2, -g.carrierW / 2], [g.carrierL / 2, g.carrierW / 2], [-g.carrierL / 2, g.carrierW / 2]].map(([x, y]) => ({ x: l.crane.x + x * cc - y * ss, y: l.crane.y + x * ss + y * cc })), '#fde68a', '#92400e');
+  const op = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([sx, sy]) => ({ x: l.crane.x + (sx * cfg.outSpanL / 2) * cc - (sy * cfg.outSpanB / 2) * ss, y: l.crane.y + (sx * cfg.outSpanL / 2) * ss + (sy * cfg.outSpanB / 2) * cc }));
+  poly(op, null, '#92400e', [4, 3]); op.forEach(p => circle(p.x, p.y, Math.max(0.3, l.site.padSide / 2), '#92400e', null, 'rgba(146,64,14,.35)'));
+  circle(l.crane.x, l.crane.y, 0.8, '#92400e', null, '#f59e0b'); text('Guindaste', l.crane.x + 0.8, l.crane.y + 0.8, '#92400e');
+  // trajetória
+  c.beginPath(); res.samples.forEach((s, i) => { const p = P(s.x, s.y); i ? c.lineTo(p.x, p.y) : c.moveTo(p.x, p.y); }); c.strokeStyle = '#2563eb'; c.lineWidth = 1.5; c.setLineDash([5, 4]); c.stroke(); c.setLineDash([]);
+  // cargas
+  const loadP = (p, lab, s, fill) => {
+    const cs = Math.cos(rad(p.phi)), sn = Math.sin(rad(p.phi)), cx = p.x - (l.load.cgx * cs - l.load.cgy * sn), cy = p.y - (l.load.cgx * sn + l.load.cgy * cs);
+    poly(obb(cx, cy, l.load.L, l.load.B, p.phi), fill, utilCol(s.util)); const q = P(p.x, p.y); c.fillStyle = '#111'; c.fillRect(q.x - 3, q.y - 3, 6, 6);
+    text(lab + (s.util !== null ? ' ' + fmt(s.util * 100, 0) + '%' : ' fora da tabela') + ' R=' + fmt(s.R, 1), p.x, p.y, utilCol(s.util), [8, -8]);
+    const cp = P(l.crane.x, l.crane.y); c.beginPath(); c.moveTo(cp.x, cp.y); c.lineTo(q.x, q.y); c.strokeStyle = 'rgba(37,99,235,.35)'; c.lineWidth = 1; c.stroke();
+  };
+  loadP(l.pick, 'Origem', res.pickS, 'rgba(59,130,246,.12)'); loadP(l.place, 'Destino', res.placeS, 'rgba(34,197,94,.22)');
+  if (VIEW.pos === 't' || VIEW.anim) { const s = samplePos(res); poly(obb(s.x - (l.load.cgx * Math.cos(rad(s.phi)) - l.load.cgy * Math.sin(rad(s.phi))), s.y - (l.load.cgx * Math.sin(rad(s.phi)) + l.load.cgy * Math.cos(rad(s.phi))), l.load.L, l.load.B, s.phi), 'rgba(245,158,11,.5)', '#b45309'); }
+  c.fillStyle = '#6b7280'; c.font = '10px sans-serif'; c.fillText('anel azul = alcance mín./máx. da lança; anel vermelho = giro da traseira; círculos = sapatas', 6, 12);
+}
+
+/* ---------- elevação ---------- */
+function drawElev(cv, res, fit) {
+  if (!res) return;
+  const { c, w, h } = fit ? { c: cv.getContext('2d'), w: cv.width, h: cv.height } : sizeCanvas(cv);
+  c.fillStyle = '#fff'; c.fillRect(0, 0, w, h);
+  const l = lift(), g = res.crane.geom, rg = l.rigging, ld = l.load, sp = rg.spreader, s = samplePos(res), cr = l.crane;
+  const dir = { x: Math.cos(s.az), y: Math.sin(s.az) }, C = { x: cr.x, y: cr.y };
+  const maxR = Math.max(...res.samples.map(q => q.R), s.R), smin = -g.carrierL / 2 - 1.5, smax = maxR + Math.max(ld.L, ld.B) / 2 + 3;
+  const ztop = Math.max(s.tipAbs, ...l.obstacles.map(o => o.h), s.z + ld.H + res.rigH) + 3, zmin = -1.5;
+  const sc = Math.min((w - 20) / (smax - smin), (h - 20) / (ztop - zmin));
+  const X = v => 10 + (v - smin) * sc, Y = v => h - 10 - (v - zmin) * sc;
+  const line = (x1, z1, x2, z2, col, lw, dash) => { c.beginPath(); c.moveTo(X(x1), Y(z1)); c.lineTo(X(x2), Y(z2)); c.strokeStyle = col; c.lineWidth = lw || 1; c.setLineDash(dash || []); c.stroke(); c.setLineDash([]); };
+  const rect = (x1, z1, x2, z2, fill, stroke) => { c.beginPath(); c.rect(X(x1), Y(z2), (x2 - x1) * sc, (z2 - z1) * sc); if (fill) { c.fillStyle = fill; c.fill(); } if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1.5; c.stroke(); } };
+  // solo
+  const step = [1, 2, 5, 10, 20].find(v => v * sc >= 35) || 20; c.fillStyle = '#9ca3af'; c.font = '10px sans-serif';
+  for (let z = 0; z < ztop; z += step) { line(smin, z, smax, z, '#f1f5f9', 1); c.fillText('z ' + z, 2, Y(z) - 2); }
+  line(smin, 0, smax, 0, '#475569', 2);
+  if (cr.zc > 0) rect(-3, 0, 3, cr.zc, '#e5e7eb', '#6b7280');
+  // obstáculos cortados pela linha
+  const far = { x: C.x + dir.x * (smax + 5), y: C.y + dir.y * (smax + 5) };
+  l.obstacles.forEach(o => { const t = clipSeg(C, far, obb(o.x, o.y, o.w, o.d, o.rot || 0)); if (!t) return; const d = Math.hypot(far.x - C.x, far.y - C.y); rect(t[0] * d, 0, t[1] * d, o.h, 'rgba(148,163,184,.6)', '#475569'); c.fillStyle = '#334155'; c.fillText(o.name, X(t[0] * d) + 3, Y(o.h) - 3); });
+  // guindaste
+  rect(-g.carrierL / 2, cr.zc, g.carrierL / 2, cr.zc + g.carrierH, '#fde68a', '#92400e'); rect(-1.2, cr.zc + g.carrierH, 1.2, cr.zc + g.pivotH, '#fbbf24', '#92400e');
+  const T = s.tip, pz = cr.zc + g.pivotH, tz = cr.zc + T.z;
+  line(g.pivotOff, pz, T.bx, cr.zc + T.bz, '#92400e', 5); if (g.jibLen > 0) line(T.bx, cr.zc + T.bz, T.x, tz, '#b45309', 3);
+  // cabo, moitão, eslingas
+  const hookS = s.R, zAtt = s.z + rg.zAtt, zHook = zAtt + res.rigH, bh = num(rg.blockH);
+  line(T.x, tz, hookS, zHook + bh, '#374151', 1.5); rect(hookS - 0.3, zHook, hookS + 0.3, zHook + bh, '#9ca3af', '#374151');
+  const cs = Math.cos(rad(s.phi)), sn = Math.sin(rad(s.phi));
+  const proj = (px, py) => { const wx = s.x + (px - ld.cgx) * cs - (py - ld.cgy) * sn, wy = s.y + (px - ld.cgx) * sn + (py - ld.cgy) * cs; return (wx - C.x) * dir.x + (wy - C.y) * dir.y; };
+  const pts = riggingPoints(l), legCol = res.verdict === 'fail' ? '#b91c1c' : '#2563eb';
+  if (!sp.use) pts.forEach(p => line(hookS, zHook, proj(p.x, p.y), s.z + p.z, legCol, 1.5));
+  else {
+    const zb = zAtt + sp.lowerH, ux = cs * dir.x + sn * dir.y, ex = (ld.w * ld.cgx) / (ld.w + sp.weight || 1);
+    const bL = hookS + (-sp.len / 2 - ex) * ux, bR = hookS + (sp.len / 2 - ex) * ux;
+    rect(Math.min(bL, bR), zb, Math.max(bL, bR), zb + 0.12, '#475569', '#111'); line(hookS, zHook, bL, zb + 0.12, legCol, 1.5); line(hookS, zHook, bR, zb + 0.12, legCol, 1.5);
+    pts.forEach(p => line(proj(p.x, p.y), zb, proj(p.x, p.y), zAtt, legCol, 1.5));
+  }
+  // carga
+  const ext = (Math.abs(ld.L * Math.cos(s.phi * Math.PI / 180 - s.az)) + Math.abs(ld.B * Math.sin(s.phi * Math.PI / 180 - s.az))) / 2, cs0 = proj(0, 0);
+  rect(cs0 - ext, s.z, cs0 + ext, s.z + ld.H, 'rgba(34,197,94,.35)', res.verdict === 'fail' ? '#b91c1c' : '#15803d');
+  c.beginPath(); c.arc(X(proj(ld.cgx, ld.cgy)), Y(s.z + ld.cgz), 4, 0, 7); c.fillStyle = '#111'; c.fill();
+  // anotações
+  c.fillStyle = '#111827'; c.font = '11px sans-serif';
+  c.fillText('Raio ' + fmt(s.R, 1) + ' m · lança ' + fmt(res.col.L, 1) + ' m a ' + fmt(s.ang, 1) + '° · ponta z=' + fmt(s.tipAbs, 1) + ' m · folga de altura ' + fmt(s.hMargin, 1) + ' m', 8, 14);
+  c.fillStyle = utilCol(s.util); c.fillText('Capacidade: ' + (s.cap ? fmt(s.cap) + ' t → uso ' + fmt(s.util * 100, 0) + '%' : 'fora da tabela') + (s.boomClear !== null ? ' · folga da lança ' + fmt(s.boomClear, 1) + ' m' : '') + (s.coll ? ' · COLISÃO: ' + s.coll : ''), 8, 28);
+  $('posInfo').textContent = 'posição: x=' + fmt(s.x, 1) + ' y=' + fmt(s.y, 1) + ' z=' + fmt(s.z, 1);
+}
+function drawAll() { if (!RES || ACTIVE !== 'scene') return; drawPlan($('cvPlan'), RES); drawElev($('cvElev'), RES); }
+function playAnim() {
+  if (!RES) return; VIEW.anim = true; VIEW.pos = 't'; $('selPos').value = 't'; let t0 = null; const dur = Math.max(4000, RES.pathLen * 250);
+  const step = ts => { if (t0 === null) t0 = ts; VIEW.t = Math.min(1, (ts - t0) / dur); $('sliderT').value = VIEW.t * 1000; drawAll(); if (VIEW.t < 1) requestAnimationFrame(step); else VIEW.anim = false; };
+  requestAnimationFrame(step);
+}
+
+/* ---------- interação na planta ---------- */
+function bindPlan() {
+  const cv = $('cvPlan'); let drag = null;
+  const pos = e => { const r = cv.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  cv.addEventListener('pointerdown', e => {
+    const [px, py] = pos(e), p = s2w(px, py), l = lift(), g = RES.crane.geom;
+    cv.setPointerCapture(e.pointerId);
+    const tolW = 12 / VIEW.scale;
+    if (Math.hypot(p.x - l.crane.x, p.y - l.crane.y) < Math.max(1.2, tolW)) drag = { k: 'crane', dx: p.x - l.crane.x, dy: p.y - l.crane.y };
+    else {
+      const inLoad = q => pointInPoly(p, obb(q.x - (l.load.cgx * Math.cos(rad(q.phi)) - l.load.cgy * Math.sin(rad(q.phi))), q.y - (l.load.cgx * Math.sin(rad(q.phi)) + l.load.cgy * Math.cos(rad(q.phi))), l.load.L, l.load.B, q.phi));
+      if (inLoad(l.place)) drag = { k: 'place', dx: p.x - l.place.x, dy: p.y - l.place.y };
+      else if (inLoad(l.pick)) drag = { k: 'pick', dx: p.x - l.pick.x, dy: p.y - l.pick.y };
+      else { const i = l.obstacles.findIndex(o => pointInPoly(p, obb(o.x, o.y, o.w, o.d, o.rot || 0))); if (i >= 0) drag = { k: 'obs', i, dx: p.x - l.obstacles[i].x, dy: p.y - l.obstacles[i].y }; else drag = { k: 'pan', px, py, ox: VIEW.ox, oy: VIEW.oy }; }
+    }
+  });
+  cv.addEventListener('pointermove', e => {
+    if (!drag) return; const [px, py] = pos(e), p = s2w(px, py), l = lift(), sn = v => Math.round(v * 10) / 10;
+    if (drag.k === 'pan') { VIEW.ox = drag.ox + px - drag.px; VIEW.oy = drag.oy + py - drag.py; drawAll(); return; }
+    const t = drag.k === 'crane' ? l.crane : drag.k === 'pick' ? l.pick : drag.k === 'place' ? l.place : l.obstacles[drag.i];
+    t.x = sn(p.x - drag.dx); t.y = sn(p.y - drag.dy); syncInputs(); refresh();
+  });
+  cv.addEventListener('pointerup', () => { drag = null; });
+  cv.addEventListener('wheel', e => { e.preventDefault(); const [px, py] = pos(e), p = s2w(px, py), f = e.deltaY < 0 ? 1.15 : 1 / 1.15; VIEW.scale *= f; VIEW.ox = px - p.x * VIEW.scale; VIEW.oy = py + p.y * VIEW.scale; drawAll(); }, { passive: false });
+}
+
+/* =====================================================================
+   ABA: CARGA
+   ===================================================================== */
+function renderLoad() {
+  $('tab-load').innerHTML = `
+  <fieldset><legend>Carga a ser içada</legend><div class="grid">
+   ${fld('Descrição', 'load.name', { type: 'text' })}${fld('Peso', 'load.w', { unit: 't' })}
+   ${fld('Comprimento (eixo X da carga)', 'load.L', { unit: 'm' })}${fld('Largura (eixo Y da carga)', 'load.B', { unit: 'm' })}${fld('Altura', 'load.H', { unit: 'm' })}
+  </div></fieldset>
+  <fieldset><legend>Centro de gravidade (a partir do centro geométrico da base, eixos da carga)</legend><div class="grid">
+   ${fld('CG em X', 'load.cgx', { unit: 'm' })}${fld('CG em Y', 'load.cgy', { unit: 'm' })}${fld('CG em Z (altura sobre a base)', 'load.cgz', { unit: 'm' })}</div>
+   <p class="note">O gancho fica na vertical do CG. Se o CG for deslocado, as pernas assumem cargas diferentes e o sistema recalcula.</p></fieldset>
+  <p class="note">Peso em toneladas métricas (1 t = 9,80665 kN). Confirme o peso real e o CG por desenho, pesagem ou célula de carga — erro no CG é a causa mais comum de içamento inclinado.</p>
+  <div class="warnbox">Peso = ${'<b id="ldw"></b>'} — volume da caixa ≈ <b id="ldv"></b> m³ → densidade média <b id="ldd"></b> t/m³ (compare com o material esperado para detectar erro de digitação).</div>`;
+}
+
+/* =====================================================================
+   ABA: RIGGING
+   ===================================================================== */
+function accOpts(type) { return S.lib.acc.filter(a => (Array.isArray(type) ? type : [type]).includes(a.type)).map(a => [a.id, a.name + ' — ' + fmt(a.wll) + ' t']); }
+function renderRig() {
+  const l = lift(), rg = l.rigging;
+  $('tab-rig').innerHTML = `
+  <fieldset><legend>Configuração das pernas</legend><div class="grid">
+   ${fld('Arranjo', 'rigging.preset', { type: 'select', re: 'rig', opts: [['1', '1 perna (sobre o CG)'], ['2L', '2 pernas (ao longo de X)'], ['2B', '2 pernas (ao longo de Y)'], ['3', '3 pernas'], ['4', '4 pernas'], ['custom', 'Personalizado (tabela)']] })}
+   ${rg.preset === 'custom' ? '' : fld('Espaçamento dos olhais em X', 'rigging.spanL', { unit: 'm' }) + fld('Espaçamento dos olhais em Y', 'rigging.spanB', { unit: 'm' })}
+   ${fld('Altura dos olhais sobre a base da carga', 'rigging.zAtt', { unit: 'm' })}
+   ${rg.spreader.use ? '' : fld('Altura do gancho acima dos olhais', 'rigging.h', { unit: 'm' })}
+   ${fld('Ângulo mínimo admitido (c/ horizontal)', 'rigging.minAng', { unit: '°' })}
+  </div>
+  ${rg.preset === 'custom' ? `<table><tr><th>Ponto</th><th>X (m)</th><th>Y (m)</th><th>Z (m)</th><th></th></tr>${rg.pts.map((p, i) => `<tr><td>${i + 1}</td>${['x', 'y', 'z'].map(k => `<td><input type="number" step="any" data-path="rigging.pts.${i}.${k}" data-type="number" value="${p[k]}"></td>`).join('')}<td><button class="btn2 del" data-delpt="${i}">✕</button></td></tr>`).join('')}</table><div class="tools"><button class="btn2" id="bAddPt">+ Ponto</button></div>` : ''}
+  </fieldset>
+  <fieldset><legend>Acessórios (confira sempre com o certificado e a plaqueta)</legend><div class="grid">
+   ${fld('Eslinga / cinta / cabo / corrente', 'rigging.slingId', { type: 'select', opts: accOpts(['cinta', 'cabo', 'corrente']) })}
+   ${fld('Modo de uso', 'rigging.mode', { type: 'select', opts: Object.entries(MODES).map(([k, v]) => [k, v[0] + ' — fator ' + v[1]]) })}
+   ${fld('Manilha nos olhais', 'rigging.shackleId', { type: 'select', opts: accOpts('manilha') })}
+   ${fld('Peso das eslingas', 'rigging.slingW', { unit: 't' })}${fld('Peso das manilhas', 'rigging.shackleW', { unit: 't' })}
+   ${fld('Peso do moitão / gancho', 'rigging.blockW', { unit: 't' })}${fld('Altura do moitão', 'rigging.blockH', { unit: 'm' })}${fld('Capacidade do moitão', 'rigging.hookCap', { unit: 't' })}
+  </div></fieldset>
+  <fieldset><legend>Balancim (spreader beam)</legend><div class="grid">
+   ${fld('Usar balancim', 'rigging.spreader.use', { type: 'check', re: 'rig' })}
+   ${rg.spreader.use ? fld('Comprimento do balancim', 'rigging.spreader.len', { unit: 'm' }) + fld('Peso do balancim', 'rigging.spreader.weight', { unit: 't' }) + fld('Altura do gancho sobre o balancim', 'rigging.spreader.h', { unit: 'm' }) + fld('Comprimento das eslingas inferiores (verticais)', 'rigging.spreader.lowerH', { unit: 'm' }) + fld('Capacidade vertical do balancim', 'rigging.spreader.capVert', { unit: 't' }) + fld('Capacidade à compressão axial', 'rigging.spreader.capComp', { unit: 'kN' }) : ''}
+  </div><p class="note">Com balancim as pernas inferiores ficam verticais (menos compressão na carga); as eslingas superiores trabalham em ângulo e comprimem o balancim.</p></fieldset>
+  <div id="rigResult"></div>`;
+  const b = $('bAddPt'); if (b) b.onclick = () => { rg.pts.push({ x: 0, y: 0, z: rg.zAtt }); renderRig(); refresh(); };
+  $('tab-rig').querySelectorAll('[data-delpt]').forEach(x => x.onclick = () => { rg.pts.splice(+x.dataset.delpt, 1); renderRig(); refresh(); });
+}
+function updateRigResult() {
+  const el = $('rigResult'); if (!el || !RES) return; const r = RES;
+  el.innerHTML = `<h3>Esforços nas pernas (carga de cálculo ${fmt(r.W.load * r.W.dyn)} t = peso × fator dinâmico ${fmt(r.W.dyn)})</h3>
+  <table><tr><th>Perna</th><th>Posição X,Y (m)</th><th>Comprimento (m)</th><th>Ângulo c/ horiz.</th><th>Vertical (t)</th><th>Tensão (t)</th><th>Tensão (kN)</th><th>WLL útil (t)</th><th>Uso</th><th>Manilha</th></tr>
+  ${r.legs.map(l => { const u = l.wll ? l.T / l.wll : 9, s = u > 1 ? 'fail' : u > lift().site.maxUtil / 100 ? 'warn' : 'ok';
+    return `<tr><td>${l.grp} ${l.n}${l.slack ? ' (frouxa)' : ''}</td><td>${fmt(l.x)} ; ${fmt(l.y)}</td><td>${fmt(l.L)}</td><td>${fmt(l.ang, 1)}°</td><td>${fmt(l.V)}</td><td><b>${fmt(l.T)}</b></td><td>${fmt(l.T * G, 1)}</td><td>${fmt(l.wll)}</td><td><span class="st ${s}">${fmt(u * 100, 0)}%</span></td><td><span class="st ${l.shackleOk ? 'ok' : 'fail'}">${l.shackleOk ? 'OK' : 'NÃO'}</span></td></tr>`; }).join('')}</table>
+  <p class="note">Comprimento = comprimento útil de cada eslinga entre olhal e gancho, para o gancho ficar na vertical do CG com a altura informada. Em cestos o ramal é calculado individualmente. ${r.spreaderComp ? 'Compressão no balancim: ' + fmt(r.spreaderComp * G, 1) + ' kN.' : ''}</p>`;
+}
+
+/* =====================================================================
+   ABA: GUINDASTE
+   ===================================================================== */
+function chartHTML(chart, editBase, hiCol, hiRow) {
+  const rows = editBase ? chart.rows : [...chart.rows].sort((a, b) => a.r - b.r);
+  let h = '<div class="scroll"><table><tr><th>Raio (m) \\ Lança/ext. (m)</th>' + chart.cols.map((c, k) => `<th>${editBase ? `<input type="number" step="any" data-path="${editBase}.cols.${k}.L" data-type="number" data-re="lib" value="${c.L}"><br><input class="w" style="width:70px" data-path="${editBase}.cols.${k}.label" data-type="text" value="${esc(c.label)}"><br><button class="btn2 del" data-delcol="${k}">✕</button>` : esc(c.label)}</th>`).join('') + '</tr>';
+  rows.forEach((row, i) => {
+    h += `<tr><td>${editBase ? `<input type="number" step="any" data-path="${editBase}.rows.${i}.r" data-type="number" data-re="lib" value="${row.r}"> <button class="btn2 del" data-delrow="${i}">✕</button>` : fmt(row.r, 1)}</td>`;
+    row.caps.forEach((v, k) => { const hi = hiCol === k && hiRow === row.r;
+      h += `<td class="${hi ? 'hl' : ''}">${editBase ? `<input type="number" step="any" data-path="${editBase}.rows.${i}.caps.${k}" data-type="number" data-null="1" value="${v === null ? '' : v}">` : (v === null ? '<span class="nul">—</span>' : fmt(v, 2))}</td>`; });
+    h += '</tr>';
+  });
+  return h + '</table></div>';
+}
+function renderCrane() {
+  const l = lift(), cr = l.crane, crane = S.lib.cranes.find(c => c.id === cr.id) || S.lib.cranes[0], cfg = crane.configs[Math.min(cr.cfg, crane.configs.length - 1)];
+  $('tab-crane').innerHTML = `
+  <fieldset><legend>Equipamento de içamento</legend><div class="grid">
+   ${fld('Equipamento', 'crane.id', { type: 'select', re: 'crane', opts: S.lib.cranes.map(c => [c.id, (c.type === 'munck' ? '[Munck] ' : '[Guindaste] ') + c.name]) })}
+   ${fld('Configuração (apoio / contrapeso)', 'crane.cfg', { type: 'select', int: true, re: 'crane', opts: crane.configs.map((c, i) => [i, c.name]) })}
+   ${fld('Lança / extensão (coluna da tabela)', 'crane.col', { type: 'select', int: true, re: 'crane', opts: cfg.chart.cols.map((c, i) => [i, c.label + ' (L = ' + fmt(c.L, 1) + ' m)']) })}
+  </div>
+  ${crane.illustrative ? '<div class="warnbox"><b>ATENÇÃO:</b> este equipamento e sua tabela são <b>ILUSTRATIVOS</b> (gerados por fórmula) e <b>não representam nenhum fabricante</b>. Para uso real, cadastre a tabela de carga oficial do seu guindaste na aba <b>Biblioteca</b>.</div>' : ''}</fieldset>
+  <fieldset><legend>Posição e opções</legend><div class="grid">
+   ${fld('Posição X do eixo de giro', 'crane.x', { unit: 'm' })}${fld('Posição Y do eixo de giro', 'crane.y', { unit: 'm' })}${fld('Cota do piso do guindaste', 'crane.zc', { unit: 'm' })}${fld('Orientação do chassi (estabilizadores)', 'crane.carrierAng', { unit: '°' })}
+   ${fld('Folga anti-two-block (ponta da lança → moitão)', 'crane.atb', { unit: 'm' })}
+   ${fld('A tabela do fabricante já desconta o moitão', 'crane.blockInChart', { type: 'check' })}
+  </div><p class="note">A carga de cálculo inclui carga + eslingas + manilhas + balancim e, salvo marcação acima, o moitão — multiplicada pelo fator dinâmico. Verifique no manual se a tabela é líquida ou bruta.</p></fieldset>
+  <fieldset><legend>Tabela de carga em uso (célula destacada = capacidade do pior ponto do percurso)</legend><div id="craneChart"></div></fieldset>
+  <fieldset><legend>Seleção automática</legend>
+   <div class="tools"><button class="btn2 pri" id="bOpt">Buscar guindaste/lança que atendem este içamento</button></div>
+   <div id="optOut" class="note">Testa todos os equipamentos, configurações e lanças da biblioteca para as posições e obstáculos atuais (não muda a posição do guindaste).</div></fieldset>`;
+  $('bOpt').onclick = () => {
+    const res = optimize(lift(), S.lib).slice(0, 20);
+    $('optOut').innerHTML = res.length ? `<table><tr><th>Equipamento</th><th>Lança</th><th>Uso máx.</th><th>Situação</th><th></th></tr>${res.map((o, i) => `<tr><td>${esc(o.crane.name)}</td><td>${esc(o.label)}</td><td>${fmt(o.u * 100, 0)}%</td><td><span class="st ${o.warn ? 'warn' : 'ok'}">${o.warn ? 'ATENÇÃO' : 'OK'}</span></td><td><button class="btn2" data-app="${i}">Aplicar</button></td></tr>`).join('')}</table>` : '<b>Nenhum equipamento da biblioteca atende.</b> Mude a posição do guindaste, os obstáculos ou cadastre outro equipamento.';
+    $('optOut').querySelectorAll('[data-app]').forEach(b => b.onclick = () => { const o = res[+b.dataset.app]; const c = lift().crane; c.id = o.crane.id; c.cfg = o.ci; c.col = o.ki; renderCrane(); refresh(); });
+  };
+}
+function updateCraneChart() {
+  const el = $('craneChart'); if (!el || !RES) return;
+  let hiRow = null; if (RES.sMax) { const rows = [...RES.cfg.chart.rows].sort((a, b) => a.r - b.r); const row = rows.find(r => r.r >= RES.sMax.R - 1e-9 && r.caps[RES.colI] !== null && +r.caps[RES.colI] > 0); hiRow = row ? row.r : null; }
+  el.innerHTML = chartHTML(RES.cfg.chart, null, RES.colI, hiRow) + `<p class="note">Capacidades em toneladas. "—" = fora da tabela. A verificação usa o raio imediatamente maior (conservador).</p>`;
+}
+
+/* =====================================================================
+   ABA: LOCAL / SOLO / VENTO
+   ===================================================================== */
+function renderSite() {
+  const l = lift();
+  $('tab-site').innerHTML = `
+  <fieldset><legend>Fatores e critérios</legend><div class="grid">
+   ${fld('Fator dinâmico (impacto/içamento)', 'site.dyn')}${fld('Uso máximo admitido da tabela', 'site.maxUtil', { unit: '%' })}
+   ${fld('Margem horizontal carga–obstáculo', 'site.hMargin', { unit: 'm' })}${fld('Margem vertical carga–obstáculo', 'site.vMargin', { unit: 'm' })}${fld('Folga mínima lança–obstáculo', 'site.boomMargin', { unit: 'm' })}
+  </div><p class="note">Uso máximo típico: 75–85% (içamentos críticos). Fator dinâmico: 1,0 para içamento lento e controlado; valores maiores em movimentos bruscos ou embarcações. Defina conforme o procedimento da empresa.</p></fieldset>
+  <fieldset><legend>Vento</legend><div class="grid">
+   ${fld('Velocidade do vento prevista', 'site.wind', { unit: 'm/s' })}${fld('Limite do guindaste (manual)', 'site.windLimit', { unit: 'm/s' })}${fld('Coef. de arrasto Cd', 'site.cd')}
+   ${fld('Área projetada automática (L × H)', 'site.areaAuto', { type: 'check', re: 'site' })}${l.site.areaAuto ? '' : fld('Área projetada', 'site.area', { unit: 'm²' })}
+  </div><p class="note">1 m/s = 3,6 km/h. Muitos guindastes limitam a operação em torno de 9–10 m/s (confira o manual). Cargas com grande área (painéis, vasos) podem exigir limite menor.</p></fieldset>
+  <fieldset><legend>Solo e estabilizadores</legend><div class="grid">
+   ${fld('Tensão admissível do solo', 'site.soilKpa', { unit: 'kPa' })}${fld('Lado da sapata (quadrada)', 'site.padSide', { unit: 'm' })}
+  </div><p class="note">Referências típicas: argila mole 50–100 kPa; areia/argila média 100–200 kPa; solo compactado/pedregulho 200–400 kPa. Use o laudo do local. A reação é estimada com a base rígida e o peso próprio da configuração — para decisão final use as reações do fabricante.</p></fieldset>`;
+}
+
+/* =====================================================================
+   ABA: BIBLIOTECA
+   ===================================================================== */
+let LIBSEL = { c: 0, k: 0 };
+function renderLib() {
+  const lib = S.lib; LIBSEL.c = Math.min(LIBSEL.c, lib.cranes.length - 1); const cr = lib.cranes[LIBSEL.c]; LIBSEL.k = Math.min(LIBSEL.k, cr.configs.length - 1); const cfg = cr.configs[LIBSEL.k], gp = `cranes.${LIBSEL.c}.geom`, cp = `cranes.${LIBSEL.c}.configs.${LIBSEL.k}`;
+  $('tab-lib').innerHTML = `
+  <fieldset><legend>Equipamentos cadastrados</legend>
+   <div class="tools">${lib.cranes.map((c, i) => `<button class="btn2 ${i === LIBSEL.c ? 'pri' : ''}" data-sel="${i}">${esc(c.name)}</button>`).join('')}</div>
+   <div class="tools"><button class="btn2" id="bNewTele">+ Novo guindaste (vazio)</button><button class="btn2" id="bNewMunck">+ Novo munck (vazio)</button><button class="btn2" id="bDupCrane">Duplicar selecionado</button><button class="btn2 del" id="bDelCrane">Excluir selecionado</button></div></fieldset>
+  <fieldset><legend>Dados do equipamento selecionado</legend><div class="grid">
+   ${fld('Nome', 'lib.cranes.' + LIBSEL.c + '.name', { type: 'text' })}
+   ${fld('Tipo', 'lib.cranes.' + LIBSEL.c + '.type', { type: 'select', opts: [['telescopic', 'Guindaste telescópico'], ['munck', 'Munck / articulado']] })}
+   ${fld('Tabela ilustrativa (não oficial)', 'lib.cranes.' + LIBSEL.c + '.illustrative', { type: 'check', re: 'lib' })}
+   ${fld('Altura do pivô da lança', 'lib.' + gp + '.pivotH', { unit: 'm' })}${fld('Afastamento do pivô ao eixo de giro', 'lib.' + gp + '.pivotOff', { unit: 'm' })}
+   ${fld('Ângulo mínimo da lança', 'lib.' + gp + '.minAng', { unit: '°' })}${fld('Ângulo máximo da lança', 'lib.' + gp + '.maxAng', { unit: '°' })}
+   ${fld('Jib/extensão fixa — comprimento (0 = sem)', 'lib.' + gp + '.jibLen', { unit: 'm' })}${fld('Jib — ângulo relativo à lança', 'lib.' + gp + '.jibAng', { unit: '°' })}
+   ${fld('Raio de giro da traseira', 'lib.' + gp + '.tailR', { unit: 'm' })}${fld('Comprimento do chassi (desenho)', 'lib.' + gp + '.carrierL', { unit: 'm' })}${fld('Largura do chassi (desenho)', 'lib.' + gp + '.carrierW', { unit: 'm' })}${fld('Altura do chassi (desenho)', 'lib.' + gp + '.carrierH', { unit: 'm' })}
+  </div></fieldset>
+  <fieldset><legend>Configuração e tabela de carga</legend>
+   <div class="tools">${cr.configs.map((c, i) => `<button class="btn2 ${i === LIBSEL.k ? 'pri' : ''}" data-selcfg="${i}">${esc(c.name)}</button>`).join('')}<button class="btn2" id="bAddCfg">+ Configuração</button><button class="btn2 del" id="bDelCfg">Excluir configuração</button></div>
+   <div class="grid">${fld('Nome da configuração', 'lib.' + cp + '.name', { type: 'text', re: 'lib' })}${fld('Distância entre estabilizadores (longit.)', 'lib.' + cp + '.outSpanL', { unit: 'm' })}${fld('Distância entre estabilizadores (transv.)', 'lib.' + cp + '.outSpanB', { unit: 'm' })}${fld('Peso total em operação (c/ contrapeso)', 'lib.' + cp + '.wTotal', { unit: 't' })}</div>
+   <p class="note">Edite a tabela abaixo (capacidade em t; vazio = fora da tabela) ou cole direto do Excel/PDF: 1ª linha "raio;lança1;lança2…", demais linhas "raio;cap1;cap2…".</p>
+   ${chartHTML(cfg.chart, 'lib.' + cp + '.chart')}
+   <div class="tools"><button class="btn2" id="bAddRow">+ Linha (raio)</button><button class="btn2" id="bAddCol">+ Coluna (lança)</button></div>
+   <textarea id="paste" rows="5" style="width:100%" placeholder="raio;10;14;18&#10;3;50;48;40&#10;4;45;42;36"></textarea>
+   <div class="tools"><button class="btn2 pri" id="bPaste">Substituir tabela pela colada</button></div></fieldset>
+  <fieldset><legend>Acessórios de içamento (WLL em t métricas)</legend>
+   <p class="note">Valores de cintas (EN 1492-1), correntes G80 e manilhas são <b>referências típicas</b> — substitua pelos dados do certificado/plaqueta do seu acessório. Cabos de aço: estimativa d²/80 apenas para pré-dimensionamento.</p>
+   <div class="scroll"><table><tr><th>Descrição</th><th>Tipo</th><th>WLL (t)</th><th></th></tr>
+   ${lib.acc.map((a, i) => `<tr><td><input class="w" style="width:380px" data-path="lib.acc.${i}.name" data-type="text" value="${esc(a.name)}"></td><td><select data-path="lib.acc.${i}.type" data-type="text">${['cinta', 'cabo', 'corrente', 'manilha'].map(t => `<option${a.type === t ? ' selected' : ''}>${t}</option>`).join('')}</select></td><td><input type="number" step="any" data-path="lib.acc.${i}.wll" data-type="number" value="${a.wll}"></td><td><button class="btn2 del" data-delacc="${i}">✕</button></td></tr>`).join('')}</table></div>
+   <div class="tools"><button class="btn2" id="bAddAcc">+ Acessório</button></div></fieldset>
+  <fieldset><legend>Onde obter tabelas de carga oficiais</legend>
+   <ul>${lib.manufacturers.map(([n, u]) => `<li><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></li>`).join('')}</ul>
+   <p class="note">As tabelas de carga são propriedade dos fabricantes: solicite ao fornecedor/locadora a tabela do <b>número de série</b> do equipamento que será usado.</p>
+   <div class="tools"><button class="btn2" id="bExpLib">Exportar biblioteca</button><label class="btn2">Importar biblioteca<input type="file" id="fImpLib" accept=".json" hidden></label><button class="btn2 del" id="bResetLib">Restaurar biblioteca padrão</button></div></fieldset>`;
+  const T = $('tab-lib'), cht = cfg.chart;
+  T.querySelectorAll('[data-sel]').forEach(b => b.onclick = () => { LIBSEL = { c: +b.dataset.sel, k: 0 }; renderLib(); });
+  T.querySelectorAll('[data-selcfg]').forEach(b => b.onclick = () => { LIBSEL.k = +b.dataset.selcfg; renderLib(); });
+  const mk = type => { const g = type === 'munck' ? genMunck('Novo munck', 4, 10, [3, 5, 7]).geom : genTelescopic('Novo guindaste', 30, 80, [10, 15, 20]).geom; return { id: uid(), name: 'Novo equipamento', type, illustrative: false, geom: g, configs: [{ name: 'Configuração 1', outSpanL: 6, outSpanB: 6, wTotal: 30, chart: { cols: [{ label: 'Lança 1', L: 10 }], rows: [{ r: 3, caps: [null] }, { r: 6, caps: [null] }, { r: 10, caps: [null] }] } }] }; };
+  $('bNewTele').onclick = () => { lib.cranes.push(mk('telescopic')); LIBSEL = { c: lib.cranes.length - 1, k: 0 }; renderLib(); refresh(); };
+  $('bNewMunck').onclick = () => { lib.cranes.push(mk('munck')); LIBSEL = { c: lib.cranes.length - 1, k: 0 }; renderLib(); refresh(); };
+  $('bDupCrane').onclick = () => { const c = clone(cr); c.id = uid(); c.name += ' (cópia)'; lib.cranes.push(c); LIBSEL = { c: lib.cranes.length - 1, k: 0 }; renderLib(); refresh(); };
+  $('bDelCrane').onclick = () => { if (lib.cranes.length < 2) return alert('Mantenha ao menos um equipamento.'); if (!confirm('Excluir "' + cr.name + '"?')) return; lib.cranes.splice(LIBSEL.c, 1); LIBSEL = { c: 0, k: 0 }; renderLib(); renderTab('crane'); refresh(); };
+  $('bAddCfg').onclick = () => { const c = clone(cfg); c.name += ' (cópia)'; cr.configs.push(c); LIBSEL.k = cr.configs.length - 1; renderLib(); refresh(); };
+  $('bDelCfg').onclick = () => { if (cr.configs.length < 2) return alert('Mantenha ao menos uma configuração.'); cr.configs.splice(LIBSEL.k, 1); LIBSEL.k = 0; renderLib(); refresh(); };
+  $('bAddRow').onclick = () => { const last = cht.rows.length ? Math.max(...cht.rows.map(r => r.r)) : 0; cht.rows.push({ r: last + 1, caps: cht.cols.map(() => null) }); renderLib(); refresh(); };
+  $('bAddCol').onclick = () => { const L = cht.cols.length ? Math.max(...cht.cols.map(c => c.L)) + 5 : 10; cht.cols.push({ label: fmt(L, 1) + ' m', L }); cht.rows.forEach(r => r.caps.push(null)); renderLib(); refresh(); };
+  T.querySelectorAll('[data-delrow]').forEach(b => b.onclick = () => { cht.rows.splice(+b.dataset.delrow, 1); renderLib(); refresh(); });
+  T.querySelectorAll('[data-delcol]').forEach(b => b.onclick = () => { if (cht.cols.length < 2) return; const k = +b.dataset.delcol; cht.cols.splice(k, 1); cht.rows.forEach(r => r.caps.splice(k, 1)); renderLib(); refresh(); });
+  $('bPaste').onclick = () => { try { const ch = parseChart($('paste').value); cfg.chart = ch; renderLib(); refresh(); } catch (e) { alert(e.message); } };
+  T.querySelectorAll('[data-delacc]').forEach(b => b.onclick = () => { lib.acc.splice(+b.dataset.delacc, 1); renderLib(); refresh(); });
+  $('bAddAcc').onclick = () => { lib.acc.push({ id: uid(), type: 'cinta', name: 'Novo acessório', wll: 1 }); renderLib(); refresh(); };
+  $('bExpLib').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(lib, null, 1)], { type: 'application/json' })); a.download = 'biblioteca-rigging.json'; a.click(); };
+  $('fImpLib').onchange = e => { const f = e.target.files[0]; if (!f) return; const rd = new FileReader(); rd.onload = () => { try { const o = JSON.parse(rd.result); if (!o.cranes || !o.acc) throw 0; S.lib = o; renderAll(); } catch (x) { alert('Arquivo inválido.'); } }; rd.readAsText(f); };
+  $('bResetLib').onclick = () => { if (!confirm('Restaurar a biblioteca padrão? Seus equipamentos cadastrados serão perdidos.')) return; S.lib = defaultLibrary(); S.lifts = S.lifts.map(l => { const d = defaultLift(S.lib, l.name); l.crane = d.crane; l.rigging.slingId = d.rigging.slingId; l.rigging.shackleId = d.rigging.shackleId; return l; }); LIBSEL = { c: 0, k: 0 }; renderAll(); };
+  T.querySelectorAll('input[data-path^="lib.cranes"][data-re="lib"]').forEach(el => { });
+}
+/* reordena linhas da tabela ao sair do campo (evita reordenar durante a digitação) */
+document.addEventListener('change', e => {
+  const p = e.target.dataset && e.target.dataset.path; if (!p || !/\.chart\.rows\.\d+\.r$/.test(p)) return;
+  const m = p.match(/^lib\.(cranes\.\d+\.configs\.\d+\.chart)\./); if (!m) return; const ch = getp('lib.' + m[1]); ch.rows.sort((a, b) => a.r - b.r); renderLib(); refresh();
+});
+
+/* =====================================================================
+   ABA: CHECKLIST
+   ===================================================================== */
+const CHECK_ITEMS = [
+  'Plano de içamento elaborado/validado por profissional legalmente habilitado, com ART/RRT quando aplicável (NR-18 — plano de carga; confirme os itens vigentes).',
+  'Operador do guindaste habilitado e treinado (NR-11 / NR-18); sinaleiro/rigger treinado; comunicação e sinais definidos.',
+  'Guindaste inspecionado e com manutenção em dia; tabela de carga do número de série disponível na cabine; limitador de momento (LMI) funcionando.',
+  'Anemômetro operante e limite de vento do fabricante respeitado.',
+  'Acessórios de içamento identificados, com certificado/WLL legível e inspeção prévia (cintas, cabos, correntes, manilhas, olhais).',
+  'Peso e centro de gravidade da carga confirmados (desenho, pesagem ou célula de carga).',
+  'Pontos de içamento (olhais/munhões) aprovados pelo fabricante/projetista da carga.',
+  'Solo avaliado (capacidade, nivelamento, redes enterradas, cavas); sapatas/mantas posicionadas.',
+  'Estabilizadores totalmente estendidos e nivelados conforme o manual.',
+  'Área isolada e sinalizada; ninguém sob carga suspensa; zona de queda definida.',
+  'Redes elétricas aéreas: distância segura verificada (NR-10 / concessionária).',
+  'Interferências com outros guindastes, estruturas e equipamentos verificadas.',
+  'Cabos-guia (tag lines) previstos para controle da carga, quando aplicável.',
+  'Teste de içamento a baixa altura (carga pouco acima do solo) antes de prosseguir.',
+  'Plano de emergência e critérios de interrupção (chuva, vento, falha) definidos.',
+  'Reunião de segurança / permissão de trabalho emitida e todos os envolvidos cientes do plano.',
+  'Aprovações do cliente / segurança do trabalho obtidas conforme o procedimento aplicável.'
+];
+function renderCheck() {
+  $('tab-check').innerHTML = `<p class="note">Lista de apoio — não substitui as normas aplicáveis nem o procedimento da empresa/cliente. Marcações ficam salvas no projeto.</p>` +
+    CHECK_ITEMS.map((t, i) => `<label class="f chk" style="margin:4px 0"><input type="checkbox" data-ck="${i}" ${S.checklist[i] ? 'checked' : ''}> ${esc(t)}</label>`).join('');
+  $('tab-check').querySelectorAll('[data-ck]').forEach(c => c.onchange = () => { S.checklist[c.dataset.ck] = c.checked; save(); });
+}
+
+/* =====================================================================
+   RESULTADOS (painel lateral) e VERIFICAÇÃO GERAL
+   ===================================================================== */
+const STL = { ok: 'OK', warn: 'ATENÇÃO', fail: 'FALHA', info: 'INFO' };
+function updateResults() {
+  const r = RES, l = lift(); if (!r) return;
+  const V = { ok: 'APROVADO COM AS PREMISSAS ATUAIS', warn: 'ATENÇÃO — REVISAR ITENS', fail: 'NÃO APROVADO — HÁ FALHAS' }[r.verdict];
+  $('results').innerHTML = `<div class="verdict ${r.verdict}">${V}</div>
+  <h3>${esc(l.name)}</h3>
+  <table><tr><td>Carga</td><td>${fmt(r.W.load)} t</td></tr><tr><td>Rigging + moitão</td><td>${fmt(r.W.gross - r.W.load)} t</td></tr><tr><td>Carga de cálculo (×${fmt(r.W.dyn)})</td><td><b>${fmt(r.W.design)} t</b></td></tr>
+  <tr><td>Equipamento</td><td>${esc(r.crane.name.replace(' (ILUSTRATIVO)', ''))}</td></tr><tr><td>Lança</td><td>${esc(r.col.label)}</td></tr>
+  <tr><td>Raio origem / destino</td><td>${fmt(r.pickS.R, 1)} / ${fmt(r.placeS.R, 1)} m</td></tr>
+  <tr><td>Uso máx. da tabela</td><td><b>${r.sMax ? fmt(r.uMax * 100, 0) + '%' : '—'}</b></td></tr>
+  <tr><td>Maior tensão de eslinga</td><td>${fmt(r.maxT)} t</td></tr>
+  <tr><td>Altura de travessia</td><td>${fmt(r.zTravel, 2)} m</td></tr></table>
+  <h3 style="margin-top:8px">Verificações</h3>
+  <table>${r.checks.map(c => `<tr title="${esc(c.note)}"><td><span class="st ${c.status}">${STL[c.status]}</span> ${esc(c.label)}<br><small style="color:#6b7280">${esc(c.value)}${c.limit ? ' — limite: ' + esc(c.limit) : ''}</small></td></tr>`).join('')}</table>
+  ${r.notes.length ? '<div class="warnbox">' + r.notes.map(esc).join('<br>') + '</div>' : ''}
+  <p class="note">Ferramenta de apoio ao planejamento. O plano oficial deve ser conferido e assinado por profissional habilitado, com os dados e tabelas oficiais do fabricante.</p>`;
+}
+let RF = 0;
+function refresh() {
+  try { RES = evaluate(lift(), S.lib); } catch (e) { console.error(e); $('results').innerHTML = '<div class="verdict fail">Erro de cálculo: ' + esc(e.message) + '</div>'; return; }
+  const l = lift(), ld = l.load;
+  if ($('ldw')) { $('ldw').textContent = fmt(ld.w) + ' t'; $('ldv').textContent = fmt(ld.L * ld.B * ld.H); $('ldd').textContent = fmt(ld.w / Math.max(1e-6, ld.L * ld.B * ld.H)); }
+  updateResults();
+  if (ACTIVE === 'rig') updateRigResult();
+  if (ACTIVE === 'crane') updateCraneChart();
+  cancelAnimationFrame(RF); RF = requestAnimationFrame(drawAll);
+  if (ACTIVE === 'report') renderReport();
+  renderLiftsNames(); save();
+}
+function renderLiftsNames() { document.querySelectorAll('#liftList .item span').forEach((s, i) => { if (S.lifts[i] && s.textContent !== S.lifts[i].name) s.textContent = S.lifts[i].name; }); }
+
+/* =====================================================================
+   RELATÓRIO
+   ===================================================================== */
+function snapshot(kind) {
+  const cv = document.createElement('canvas'); cv.width = 900; cv.height = 500; const keep = { ...VIEW }, sw = VIEW.scale;
+  const save_ = [VIEW.scale, VIEW.ox, VIEW.oy];
+  if (kind === 'plan') { VIEW.pos = 'place'; fitPlan({ getBoundingClientRect: () => ({ width: 900, height: 500 }) }, RES); drawPlan(cv, RES, true); }
+  else { VIEW.pos = 'place'; drawElev(cv, RES, true); }
+  [VIEW.scale, VIEW.ox, VIEW.oy] = save_; VIEW.pos = keep.pos; return cv.toDataURL('image/png');
+}
+function renderReport() {
+  if (!RES) return;
+  const P = S.project, l = lift(), r = RES, rg = l.rigging;
+  const rows = S.lifts.map(li => { let x; try { x = evaluate(li, S.lib); } catch (e) { return ''; } return `<tr><td>${esc(li.name)}</td><td>${fmt(li.load.w)} t</td><td>${esc(x.crane.name.replace(' (ILUSTRATIVO)', ''))} / ${esc(x.col.label)}</td><td>${x.sMax ? fmt(x.uMax * 100, 0) + '%' : '—'}</td><td>${fmt(x.maxUtilSling * 100, 0)}%</td><td><span class="st ${x.verdict}">${STL[x.verdict]}</span></td></tr>`; }).join('');
+  let imgP = '', imgE = ''; try { imgP = snapshot('plan'); imgE = snapshot('elev'); } catch (e) { console.error(e); }
+  $('tab-report').innerHTML = `<div class="noprint"><fieldset><legend>Dados do projeto (aparecem no relatório)</legend><div class="grid">
+   ${fld('Projeto', 'P.name', { type: 'text' })}${fld('Local / obra', 'P.local', { type: 'text' })}${fld('Cliente', 'P.client', { type: 'text' })}${fld('Responsável técnico', 'P.resp', { type: 'text' })}${fld('ART / registro', 'P.art', { type: 'text' })}${fld('Data', 'P.date', { type: 'date' })}${fld('Revisão', 'P.rev', { type: 'text' })}
+   </div><div class="tools"><button class="btn2 pri" onclick="window.print()">Imprimir / salvar PDF</button></div></fieldset></div>
+  <div class="sheet" id="report">
+   <h1 style="margin:0">Plano de Içamento (Rigging)</h1>
+   <div>${esc(P.name)} — ${esc(P.local)} — Cliente: ${esc(P.client)} — Rev. ${esc(P.rev)} — ${esc(P.date)}</div>
+   <div class="verdict ${r.verdict}" style="margin-top:8px">${esc(l.name)}: ${{ ok: 'APROVADO COM AS PREMISSAS ADOTADAS', warn: 'ATENÇÃO — REVISAR ITENS', fail: 'NÃO APROVADO' }[r.verdict]}</div>
+   <h2>1. Resumo dos içamentos do projeto</h2>
+   <table><tr><th>Içamento</th><th>Carga</th><th>Equipamento / lança</th><th>Uso da tabela</th><th>Uso da eslinga</th><th>Situação</th></tr>${rows}</table>
+   <h2>2. Carga</h2>
+   <table><tr><td>Descrição</td><td>${esc(l.load.name)}</td><td>Peso</td><td>${fmt(l.load.w)} t (${fmt(l.load.w * G, 1)} kN)</td></tr>
+   <tr><td>Dimensões C×L×A</td><td>${fmt(l.load.L)} × ${fmt(l.load.B)} × ${fmt(l.load.H)} m</td><td>CG (x, y, z)</td><td>${fmt(l.load.cgx)} ; ${fmt(l.load.cgy)} ; ${fmt(l.load.cgz)} m</td></tr>
+   <tr><td>Rigging + moitão</td><td>${fmt(r.W.gross - r.W.load)} t</td><td>Carga de cálculo</td><td>${fmt(r.W.design)} t (fator dinâmico ${fmt(r.W.dyn)})</td></tr></table>
+   <h2>3. Rigging</h2>
+   <p>Eslinga: ${esc(r.sling.name)} — modo: ${esc(r.modeLabel)}. Manilha: ${esc(r.shackle.name)}. ${rg.spreader.use ? 'Com balancim de ' + fmt(rg.spreader.len) + ' m (' + fmt(rg.spreader.weight) + ' t).' : ''} Altura do gancho: ${fmt(r.rigH)} m acima dos olhais.</p>
+   <table><tr><th>Perna</th><th>Comprimento (m)</th><th>Ângulo</th><th>Tensão (t)</th><th>Tensão (kN)</th><th>WLL útil (t)</th><th>Uso</th></tr>
+   ${r.legs.map(x => `<tr><td>${x.grp} ${x.n}</td><td>${fmt(x.L)}</td><td>${fmt(x.ang, 1)}°</td><td>${fmt(x.T)}</td><td>${fmt(x.T * G, 1)}</td><td>${fmt(x.wll)}</td><td>${fmt(x.T / (x.wll || 1) * 100, 0)}%</td></tr>`).join('')}</table>
+   <h2>4. Equipamento de içamento</h2>
+   <table><tr><td>Equipamento</td><td>${esc(r.crane.name)}</td><td>Configuração</td><td>${esc(r.cfg.name)}</td></tr>
+   <tr><td>Lança / extensão</td><td>${esc(r.col.label)} (L=${fmt(r.col.L, 1)} m)</td><td>Posição do eixo (x,y,z)</td><td>${fmt(l.crane.x)} ; ${fmt(l.crane.y)} ; ${fmt(l.crane.zc)} m</td></tr>
+   <tr><td>Raio origem / destino</td><td>${fmt(r.pickS.R, 1)} / ${fmt(r.placeS.R, 1)} m</td><td>Ângulo da lança origem / destino</td><td>${fmt(r.pickS.ang, 1)}° / ${fmt(r.placeS.ang, 1)}°</td></tr>
+   <tr><td>Capacidade origem / destino</td><td>${r.pickS.cap ? fmt(r.pickS.cap) : '—'} t / ${r.placeS.cap ? fmt(r.placeS.cap) : '—'} t</td><td>Uso origem / destino</td><td>${r.pickS.util ? fmt(r.pickS.util * 100, 0) : '—'}% / ${r.placeS.util ? fmt(r.placeS.util * 100, 0) : '—'}%</td></tr></table>
+   ${r.crane.illustrative ? '<p><b>ATENÇÃO: tabela de carga ILUSTRATIVA — substituir pela tabela oficial do fabricante antes de qualquer uso.</b></p>' : ''}
+   <h2>5. Planta e elevação</h2>${imgP ? `<img src="${imgP}"><img src="${imgE}">` : ''}
+   <h2>6. Verificações</h2>
+   <table><tr><th>Item</th><th>Resultado</th><th>Limite</th><th>Status</th></tr>${r.checks.map(c => `<tr><td>${esc(c.label)}</td><td>${esc(c.value)}</td><td>${esc(c.limit)}</td><td><span class="st ${c.status}">${STL[c.status]}</span></td></tr>`).join('')}</table>
+   <h2>7. Checklist de pré-içamento</h2>
+   <table>${CHECK_ITEMS.map((t, i) => `<tr><td style="width:30px">${S.checklist[i] ? '☑' : '☐'}</td><td style="text-align:left">${esc(t)}</td></tr>`).join('')}</table>
+   <h2>8. Premissas e limitações</h2>
+   <p style="font-size:12px">Este documento foi gerado por ferramenta de apoio ao planejamento. Os cálculos de tensão nas eslingas consideram a carga como corpo rígido sustentado por pernas elásticas com o gancho na vertical do CG; a verificação do guindaste usa a tabela de carga cadastrada (raio imediatamente maior, conservador). Reações de estabilizadores, efeito do vento sobre a capacidade, dinâmica e resistência de olhais e do solo devem ser confirmados com os dados do fabricante e por profissional habilitado. O plano só é válido após conferência e assinatura do responsável técnico.</p>
+   <div class="sign"><div>Elaborado por</div><div>Responsável técnico (${esc(P.resp)} ${esc(P.art)})</div><div>Aprovação cliente / SST</div></div>
+  </div>`;
+}
+
+/* =====================================================================
+   INICIALIZAÇÃO
+   ===================================================================== */
+window.addEventListener('resize', () => drawAll());
+S = load(); buildScene(); renderTabs(); renderAll();
+setTimeout(() => { fitPlan(); drawAll(); }, 50);
+</script>
+</body>
+</html>
