@@ -1,0 +1,1046 @@
+<title>Plano de Rigging</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: barra lateral com as etapas do plano + área de trabalho; em tela estreita a barra vira faixa rolável. */
+:root{
+  --bg:#E9ECEF; --panel:#FFFFFF; --field:#F6F8FA; --ink:#17212B; --muted:#586573; --line:#C9D1D9;
+  --accent:#C2410C; --on-accent:#FFFFFF; --accent-soft:#FBE3D6; --steel:#2F5D8A; --steel-soft:#DCE8F4;
+  --ok:#1E7A4C; --ok-bg:#DDF1E6; --warn:#97600A; --warn-bg:#FBEFD0; --bad:#B42323; --bad-bg:#F9DADA; --na:#586573; --na-bg:#E3E8ED;
+  --canvas:#F4F6F8; --grid:#D3DAE1;
+  --display:'Barlow Condensed','Arial Narrow',sans-serif; --body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12171D; --panel:#1A2129; --field:#141A20; --ink:#E6EAEE; --muted:#9AA6B3; --line:#303B47;
+  --accent:#FF8A4C; --on-accent:#1B1208; --accent-soft:#3A2415; --steel:#7FB2E5; --steel-soft:#1C2B3B;
+  --ok:#43D690; --ok-bg:#12301F; --warn:#F2B84B; --warn-bg:#35280E; --bad:#FF7070; --bad-bg:#3A1717; --na:#9AA6B3; --na-bg:#232C35;
+  --canvas:#0E1318; --grid:#27323D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171D; --panel:#1A2129; --field:#141A20; --ink:#E6EAEE; --muted:#9AA6B3; --line:#303B47;
+  --accent:#FF8A4C; --on-accent:#1B1208; --accent-soft:#3A2415; --steel:#7FB2E5; --steel-soft:#1C2B3B;
+  --ok:#43D690; --ok-bg:#12301F; --warn:#F2B84B; --warn-bg:#35280E; --bad:#FF7070; --bad-bg:#3A1717; --na:#9AA6B3; --na-bg:#232C35;
+  --canvas:#0E1318; --grid:#27323D; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--body);padding-block:12px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;font-weight:600}
+h2{font-size:30px;letter-spacing:.01em;line-height:1.1}
+h3{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:10px}
+p{margin:0}
+a{color:var(--steel)}
+.top{max-width:1500px;margin:0 auto 12px;display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;justify-content:space-between;border-bottom:2px solid var(--ink);padding-bottom:10px}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand svg{width:30px;height:30px;flex:none;stroke:var(--accent)}
+.brand b{font:700 28px/1 var(--display);letter-spacing:.02em;text-transform:uppercase}
+.brand small{display:block;font:500 11px var(--mono);color:var(--muted);letter-spacing:.04em}
+.app{max-width:1500px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:16px;align-items:start}
+nav{position:sticky;top:calc(12px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px}
+nav .grp{font:600 10px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:10px 8px 4px}
+nav button{display:flex;align-items:center;gap:8px;text-align:left;background:none;border:0;border-radius:4px;color:var(--ink);font:500 14px var(--body);padding:8px;cursor:pointer;min-width:0}
+nav button:hover{background:var(--field)}
+nav button[aria-current="page"]{background:var(--ink);color:var(--bg)}
+nav .n{font:500 11px var(--mono);width:18px;color:var(--muted);flex:none}
+nav button[aria-current="page"] .n{color:var(--bg)}
+nav .dot{margin-left:auto;width:9px;height:9px;border-radius:50%;background:var(--na);flex:none}
+nav .dot.ok{background:var(--ok)} nav .dot.warn{background:var(--warn)} nav .dot.bad{background:var(--bad)}
+main{min-width:0;display:flex;flex-direction:column;gap:14px}
+.lead{color:var(--muted);max-width:75ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.card.flat{background:var(--field)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+.grid.c2{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f.wide{grid-column:1/-1}
+.f>span{font:600 11px/1.2 var(--body);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+input,select,textarea{font:13px var(--mono);color:var(--ink);background:var(--field);border:1px solid var(--line);border-radius:4px;padding:7px 8px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:90px}
+input[type=checkbox]{width:auto}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.btn{font:600 13px var(--body);border:1px solid var(--ink);background:var(--panel);color:var(--ink);border-radius:4px;padding:8px 12px;cursor:pointer}
+.btn:hover{background:var(--field)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn.sm{padding:4px 8px;font-size:12px}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row.end{justify-content:flex-end}
+.scroll{overflow-x:auto;max-width:100%}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font:600 11px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+td input{padding:4px 6px;min-width:76px}
+tr.sel td{background:var(--accent-soft)}
+.chip{display:inline-block;font:600 11px var(--body);letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)} .chip.warn{background:var(--warn-bg);color:var(--warn)} .chip.bad{background:var(--bad-bg);color:var(--bad)} .chip.na{background:var(--na-bg);color:var(--na)}
+.note{font-size:12.5px;color:var(--muted);max-width:80ch}
+.warnbox{border:1px solid var(--warn);background:var(--warn-bg);color:var(--ink);border-radius:4px;padding:8px 12px;font-size:12.5px}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.kv div{border-left:3px solid var(--steel);padding:2px 0 2px 10px}
+.kv small{display:block;font:600 10.5px var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.kv b{font:500 19px var(--mono);font-variant-numeric:tabular-nums}
+.kv b em{font:400 12px var(--body);color:var(--muted);font-style:normal}
+.stage{width:100%;height:480px;background:var(--canvas);border:1px solid var(--line);border-radius:4px;position:relative;touch-action:none;overflow:hidden}
+.stage canvas{display:block;width:100%;height:100%}
+.c2d{width:100%;height:520px;background:var(--canvas);border:1px solid var(--line);border-radius:4px;display:block;touch-action:none;cursor:crosshair}
+.drop{border:2px dashed var(--line);border-radius:6px;padding:22px;text-align:center;color:var(--muted)}
+.drop.over{border-color:var(--accent);color:var(--ink)}
+svg.draw{width:100%;height:auto;max-height:520px;background:var(--canvas);border:1px solid var(--line);border-radius:4px;display:block}
+svg .l{stroke:var(--ink);fill:none;stroke-width:1.4}
+svg .g{stroke:var(--muted);stroke-width:1}
+svg .dim{stroke:var(--steel);fill:none;stroke-width:1}
+svg .ld{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.6}
+svg .cr{fill:var(--na-bg);stroke:var(--ink);stroke-width:1.4}
+svg .bm{stroke:var(--accent);stroke-width:4;fill:none;stroke-linecap:round}
+svg .sl{stroke:var(--steel);stroke-width:1.6;fill:none}
+svg .ob{fill:var(--bad-bg);stroke:var(--bad);stroke-dasharray:4 3}
+svg text{fill:var(--ink);font:11px var(--mono)}
+svg text.m{fill:var(--muted)}
+svg text.st{fill:var(--steel)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px}
+.doc{background:#fff;color:#111;border:1px solid var(--line);border-radius:4px;padding:28px;--ink:#111;--muted:#555;--line:#bbb;--field:#f3f3f3;--panel:#fff;--canvas:#fff;--steel:#1f4f7c;--accent:#b53a08;--accent-soft:#fbe0d1;--na-bg:#e6e6e6;--bad-bg:#f9dada;--bad:#b42323;--ok:#1e7a4c;--ok-bg:#ddf1e6;--warn:#8a5500;--warn-bg:#fbefd0;--na:#555}
+.doc h2{font-size:26px;border-bottom:2px solid #111;padding-bottom:6px;margin-bottom:12px;color:#111}
+.doc h3{color:#444;margin:18px 0 8px;border-bottom:1px solid #ccc;padding-bottom:3px}
+.doc th,.doc td{border-color:#ccc}
+.doc .kv b{color:#111}
+.sign{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:24px;margin-top:30px}
+.sign div{border-top:1px solid #111;padding-top:4px;font-size:12px}
+.checks label{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.checks input{margin-top:3px}
+@media (max-width:880px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  nav{position:static;flex-direction:row;overflow-x:auto;gap:4px}
+  nav .grp{display:none}
+  nav button{white-space:nowrap;flex:none}
+  nav .dot{margin-left:6px}
+  .stage{height:360px} .c2d{height:380px}
+}
+@media print{
+  body{background:#fff;padding:0} .top,nav,.noprint{display:none!important} .app{display:block} .card{border:0;padding:0}
+}
+@media (prefers-reduced-motion:no-preference){.btn,nav button{transition:background .12s}}
+</style>
+
+<div class="top">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3v6"/><path d="M16 9a4 4 0 0 1 4 4v8a6 6 0 0 1-12 0"/><circle cx="8" cy="21" r="1.6"/><path d="M5 27h22"/></svg>
+    <div><b>Plano de Rigging</b><small>PROTÓTIPO 0.1 · PLANEJAMENTO DE IÇAMENTO · CELULOSE E PAPEL</small></div>
+  </div>
+  <div class="row"><span id="verdict" data-live="verdict"></span></div>
+</div>
+<div class="app">
+  <nav id="nav" aria-label="Etapas do plano"></nav>
+  <main id="view"></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ============================== utilidades ============================== */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nf=(v,d=2)=>Number.isFinite(v)?v.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}):'–';
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+const rad=d=>d*Math.PI/180, deg=r=>r*180/Math.PI;
+const cv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const getp=(o,p)=>p.split('.').reduce((a,k)=>a==null?a:a[k],o);
+const setp=(o,p,v)=>{const ks=p.split('.');const l=ks.pop();ks.reduce((a,k)=>a[k],o)[l]=v};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const today=()=>new Date().toISOString().slice(0,10);
+const G=9.80665;
+
+/* ============================== banco de dados embarcado ============================== */
+/* Os valores abaixo são de referência para o protótipo. Conferir sempre com o catálogo vigente do fabricante. */
+const SHACKLES=[ // Manilha tipo G-209/S-209 (WLL em toneladas curtas, publicado em catálogos Crosby) ; massa aproximada
+  ['3/8"',1,0.11],['7/16"',1.5,0.16],['1/2"',2,0.30],['5/8"',3.25,0.62],['3/4"',4.75,1.1],['7/8"',6.5,1.65],['1"',8.5,2.5],
+  ['1-1/8"',9.5,3.4],['1-1/4"',12,5.0],['1-3/8"',13.5,6.8],['1-1/2"',17,8.6],['1-3/4"',25,14],['2"',35,20],['2-1/2"',55,39],['3"',85,67]
+].map(([d,st,m])=>({id:'g209-'+d,name:'Manilha G-209 '+d,wll:+(st*0.90718).toFixed(2),mass:m,src:'Tabela pública G-209 (conferir)'}));
+const WIRE_D=[8,10,12,13,14,16,18,19,20,22,24,26,28,32,36,40,44,48,52];
+const WIRE_K=0.356; // EN 12385-4, 6x36 com alma de aço (referência)
+const WEB=[[1,30,0.12],[2,60,0.20],[3,90,0.30],[4,120,0.40],[5,150,0.50],[6,180,0.60],[8,240,0.80],[10,300,1.0]]; // WLL t, largura mm, kg/m aprox.
+const CHAIN=[[6,1.12],[7,1.5],[8,2.0],[10,3.15],[13,5.3],[16,8.0],[18,10],[20,12.5],[22,15],[26,21.2],[32,31.5]]; // EN 818-2 classe 8, perna reta
+const EX_CRANES=[
+ {id:'ex-mobile-100',example:true,type:'mobile',name:'Guindaste móvel 100 t (EXEMPLO FICTÍCIO)',hp:2.4,a:1.5,minAngle:20,maxAngle:80,hookBlock:{mass:0.9,h:1.5},
+  booms:[{L:24,chart:[[6,70],[8,55],[10,42],[12,33],[14,26],[16,21],[18,17],[20,13.5],[22,10.5]]},
+         {L:32,chart:[[8,50],[10,40],[12,32],[14,26],[16,21.5],[18,18],[20,15],[24,10.5],[28,7.5]]},
+         {L:40,chart:[[10,34],[12,28],[14,23],[16,19.5],[18,16.5],[20,14],[24,10],[28,7.2],[32,5.2],[36,3.8]]}]},
+ {id:'ex-mobile-300',example:true,type:'mobile',name:'Guindaste móvel 300 t (EXEMPLO FICTÍCIO)',hp:3.2,a:2.0,minAngle:20,maxAngle:82,hookBlock:{mass:3.2,h:2.2},
+  booms:[{L:40,chart:[[8,200],[10,160],[12,130],[14,108],[16,90],[18,76],[20,64],[24,46],[28,34],[32,25],[36,18]]},
+         {L:60,chart:[[14,70],[16,62],[20,50],[24,40],[28,32],[32,26],[36,21],[44,14],[52,8.5]]}]},
+ {id:'ex-bridge-50',example:true,type:'bridge',name:'Ponte rolante 50 t + aux. 10 t (EXEMPLO FICTÍCIO)',rated:50,aux:10,hookMaxH:9.5,span:20,hookBlock:{mass:0.8,h:1.2}}
+];
+const EQUIP_TYPES=['Digestor / vaso de pressão','Refinador / desfibrador','Prensa / rolo','Cilindro secador','Lavador / filtro','Bomba / motor / redutor','Tubulação / spool','Estrutura metálica','Seção de caldeira','Tanque / silo','Outro'];
+const MATERIALS=[['Aço carbono',7850],['Aço inoxidável',7900],['Ferro fundido',7200],['Alumínio',2700],['Titânio',4500],['Concreto',2400],['Madeira',600]];
+const CHECKLIST=[
+ ['peso','Massa e centro de gravidade confirmados por fonte documentada (folha de dados, pesagem ou modelo)'],
+ ['olhais','Pontos de içamento identificados no desenho ou manual do equipamento e inspecionados'],
+ ['acess','Acessórios inspecionados, com WLL legível e dentro da validade'],
+ ['guind','Guindaste ou ponte com inspeção em dia; tabela de carga da configuração real em mãos'],
+ ['oper','Operador e sinaleiro/amarrador qualificados e autorizados'],
+ ['solo','Solo e apoios verificados (placas, madeiramento, pressão admissível)'],
+ ['area','Área isolada e sinalizada; trajeto livre de pessoas'],
+ ['inter','Interferências verificadas (estruturas, tubulações, redes elétricas energizadas)'],
+ ['clima','Condições climáticas dentro dos limites (vento, chuva, visibilidade)'],
+ ['com','Comunicação (rádio ou sinais) definida e briefing realizado'],
+ ['emerg','Plano de emergência e resgate definido'],
+ ['aprov','Plano revisado e aprovado pelo responsável técnico; ART/registro emitido quando exigido']
+];
+const MANUFACTURERS=[
+ ['Crosby Group','Acessórios de içamento','https://www.thecrosbygroup.com','Manilhas, ganchos, olhais, elos, clips: WLL, dimensões, massa, fator de projeto'],
+ ['Liebherr','Guindastes móveis e sobre esteiras','https://www.liebherr.com','Tabelas de carga, dimensões de transporte, planejadores de içamento'],
+ ['Tadano','Guindastes móveis','https://www.tadano.com','Tabelas de carga e especificações por modelo'],
+ ['Manitowoc / Grove','Guindastes móveis e esteiras','https://www.manitowoc.com','Tabelas de carga e especificações por modelo'],
+ ['Terex','Guindastes móveis','https://www.terex.com','Tabelas de carga e especificações por modelo'],
+ ['Konecranes','Pontes rolantes e talhas','https://www.konecranes.com','Capacidades, aproximações de gancho, classe de serviço (FEM/ISO)'],
+ ['Demag','Pontes rolantes e talhas','https://www.demagcranes.com','Capacidades, aproximações de gancho, classe de serviço'],
+ ['Kito','Talhas e acessórios','https://www.kito.com','Talhas manuais/elétricas, capacidades e dimensões'],
+ ['Columbus McKinnon / Yale','Talhas, correntes, eslingas','https://www.cmco.com','Talhas e eslingas de corrente: WLL por configuração'],
+ ['Tractel','Eslingas, talhas, ancoragens','https://www.tractel.com','Eslingas têxteis e acessórios: WLL e fator de modo']
+];
+
+/* ============================== estado ============================== */
+const KEY='rigplan.v1';
+function defaults(){return{
+  meta:{project:'Troca do rotor do refinador (EXEMPLO)',client:'',site:'',tag:'RF-101',rev:'A',author:'',reviewer:'',date:today(),art:'',notes:''},
+  load:{name:'Rotor do refinador (EXEMPLO)',cat:EQUIP_TYPES[1],mass:18,massSrc:'Folha de dados',tol:5,L:2.4,W:1.8,H:1.6,cx:0,cz:0,cy:0.8,windA:4,windCd:1.2,
+    lugs:[{x:-0.9,z:-0.6,y:1.6},{x:0.9,z:-0.6,y:1.6},{x:0.9,z:0.6,y:1.6},{x:-0.9,z:0.6,y:1.6}],gen:{n:4,dx:1.8,dz:1.2,y:1.6}},
+  equip:{craneId:'ex-mobile-100',boom:1,radPick:12,radSet:12,hoist:'main',obst:3,margin:1,limit:80,reaction:0,pad:1,soil:150,wind:0,windMax:9},
+  rig:{kind:'wire',slingId:'auto',grade:1770,eff:0.85,chainG:80,mode:1,daf:1.15,hookH:2.5,dist:'static',shackleId:'auto',
+    master:{name:'',wll:0,mass:0},spreader:{use:false,name:'',wll:0,mass:0},extra:0},
+  chk:{}, db:{cranes:[],acc:[]}, src:[],
+  ui:{lift:0,d2unit:'auto',up:'z',munit:'mm',mat:7850,fill:100,model:true}
+}}
+function merge(t,s){for(const k in s){if(s[k]&&typeof s[k]==='object'&&!Array.isArray(s[k])&&t[k]&&typeof t[k]==='object')merge(t[k],s[k]);else t[k]=s[k]}return t}
+let S=(function(){try{const r=localStorage.getItem(KEY);if(r)return merge(defaults(),JSON.parse(r))}catch(e){}return defaults()})();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const allCranes=()=>EX_CRANES.concat(S.db.cranes);
+
+/* ============================== cálculo ============================== */
+function solve3(M,b){
+  const A=M.map((r,i)=>[...r,b[i]]);
+  for(let i=0;i<3;i++){let p=i;for(let r=i+1;r<3;r++)if(Math.abs(A[r][i])>Math.abs(A[p][i]))p=r;[A[i],A[p]]=[A[p],A[i]];
+    const d=A[i][i]||1e-12;for(let r=i+1;r<3;r++){const f=A[r][i]/d;for(let c=i;c<4;c++)A[r][c]-=f*A[i][c]}}
+  const x=[0,0,0];for(let i=2;i>=0;i--){let s=A[i][3];for(let c=i+1;c<3;c++)s-=A[i][c]*x[c];x[i]=s/(A[i][i]||1e-12)}return x;
+}
+/* Distribuição da carga vertical entre os olhais por equilíbrio de corpo rígido (mínimo desvio da divisão igual). */
+function distribute(legs,cx,cz,W,mode){
+  const n=legs.length;if(!n)return[];if(n===1)return[W];
+  if(mode==='cons')return legs.map(()=>W/2);
+  const A=[legs.map(()=>1),legs.map(l=>l.x-cx),legs.map(l=>l.z-cz)],r0=W/n;
+  const M=[[0,0,0],[0,0,0],[0,0,0]];
+  for(let i=0;i<3;i++)for(let j=0;j<3;j++){let s=0;for(let k=0;k<n;k++)s+=A[i][k]*A[j][k];M[i][j]=s}
+  const tr=M[0][0]+M[1][1]+M[2][2];for(let i=0;i<3;i++)M[i][i]+=1e-9*tr+1e-12;
+  const rhs=[W-n*r0,-A[1].reduce((s,v)=>s+v*r0,0),-A[2].reduce((s,v)=>s+v*r0,0)];
+  const lam=solve3(M,rhs);
+  return legs.map((_,k)=>r0+A[0][k]*lam[0]+A[1][k]*lam[1]+A[2][k]*lam[2]);
+}
+function slingCandidates(R){
+  const list=[];
+  if(R.kind==='wire')WIRE_D.forEach(d=>{const mbf=WIRE_K*d*d*R.grade/1000;list.push({id:'w'+d,name:'Cabo de aço 6x36 AF Ø'+d+' mm',wll:mbf/G/5*R.eff,massM:0.0043*d*d,src:'Calculado: MBF/5 × eficiência'})});
+  if(R.kind==='web')WEB.forEach(([w,b,m])=>list.push({id:'t'+w,name:'Cinta têxtil '+w+' t / '+b+' mm',wll:w,massM:m*1000/1000*1,src:'EN 1492-1 (código de cor)'}));
+  if(R.kind==='chain')CHAIN.forEach(([d,w])=>list.push({id:'c'+d,name:'Corrente classe '+R.chainG+' Ø'+d+' mm',wll:w*(R.chainG===100?1.25:1),massM:0.022*d*d,src:'EN 818-2/4'}));
+  S.db.acc.filter(a=>a.kind==='sling-'+R.kind).forEach(a=>list.push({id:'u'+a.id,name:a.name,wll:a.wll,massM:a.massM||0,src:'Usuário'}));
+  list.forEach(s=>s.wllE=s.wll*R.mode);
+  return list.sort((a,b)=>a.wllE-b.wllE);
+}
+function shackleList(){return SHACKLES.concat(S.db.acc.filter(a=>a.kind==='shackle').map(a=>({id:'u'+a.id,name:a.name,wll:a.wll,mass:a.massM||0,src:'Usuário'}))).sort((a,b)=>a.wll-b.wll)}
+function capAt(chart,r){
+  const s=[...chart].sort((a,b)=>a[0]-b[0]);if(!s.length)return{cap:null,out:true};
+  if(r>s[s.length-1][0]+1e-9)return{cap:null,out:true};
+  const row=s.find(x=>x[0]>=r-1e-9);return{cap:row[1],R:row[0],out:false};
+}
+function calc(){
+  const L=S.load,R=S.rig,E=S.equip,C={checks:[]};
+  const add=(id,tab,label,status,value,detail)=>C.checks.push({id,tab,label,status,value:value??'',detail:detail??''});
+  const crane=allCranes().find(c=>c.id===E.craneId)||null;C.crane=crane;
+  const lugs=(L.lugs||[]).map(l=>({x:+l.x||0,z:+l.z||0,y:+l.y||0}));const n=lugs.length;C.n=n;
+  const topY=n?Math.max(...lugs.map(l=>l.y)):(+L.H||0);
+  const hookY=topY+(+R.hookH||0);C.hookY=hookY;
+  C.legs=lugs.map(l=>{const dx=l.x-L.cx,dz=l.z-L.cz,d=Math.hypot(dx,dz),v=Math.max(hookY-l.y,0.01);return{...l,d,v,len:Math.hypot(d,v),beta:deg(Math.atan2(d,v))}});
+  const tol=1+(+L.tol||0)/100;
+  const fixed=((+R.master.mass||0)+(R.spreader.use?+R.spreader.mass||0:0)+(+R.extra||0))/1000;
+  const cands=slingCandidates(R),shl=shackleList();
+  let sl=null,sh=null,rigT=fixed,T=[],shares=[],Wd=0,Tmax=0;
+  for(let it=0;it<4;it++){
+    Wd=(L.mass*tol+rigT)*R.daf;
+    shares=distribute(C.legs,L.cx,L.cz,Wd,R.dist);
+    T=shares.map((r,i)=>Math.abs(r)/Math.max(Math.cos(rad(C.legs[i].beta)),0.05));
+    Tmax=T.length?Math.max(...T):0;
+    sl=R.slingId!=='auto'?(cands.find(s=>s.id===R.slingId)||null):null;
+    if(!sl)sl=cands.find(s=>s.wllE>=Tmax)||cands[cands.length-1]||null;
+    sh=R.shackleId!=='auto'?(shl.find(s=>s.id===R.shackleId)||null):null;
+    if(!sh)sh=shl.find(s=>s.wll>=Tmax)||shl[shl.length-1]||null;
+    rigT=fixed+(sl?C.legs.reduce((s,l)=>s+sl.massM*(l.len+0.6),0)/1000:0)+(sh?sh.mass*n/1000:0);
+  }
+  Object.assign(C,{Wd,T,shares,Tmax,sl,sh,rigT,cands,shl,fixed,tol});
+  C.maxBeta=C.legs.length?Math.max(...C.legs.map(l=>l.beta)):0;
+  C.minShare=shares.length?Math.min(...shares):0;
+  // --- eslingas e acessórios
+  if(!n)add('lugs','carga','Pontos de içamento','bad','nenhum','Cadastre ao menos um olhal na aba Carga.');
+  else if(n===1)add('lugs','carga','Pontos de içamento','warn','1 olhal','Içamento por um ponto: confirme estabilidade e rotação da carga.');
+  else add('lugs','carga','Pontos de içamento','ok',n+' olhais','');
+  if(n){
+    const gap=Math.hypot(L.cx-(lugs.reduce((s,l)=>s+l.x,0)/n),L.cz-(lugs.reduce((s,l)=>s+l.z,0)/n));
+    if(C.minShare<-1e-6)add('cg','carga','Centro de gravidade × olhais','bad','perna sem carga','O CG está fora da região dos olhais: um olhal fica sem carga ou em compressão.');
+    else add('cg','carga','Centro de gravidade × olhais','ok','CG a '+nf(gap,2)+' m do centroide dos olhais','Distribuição por equilíbrio de corpo rígido.');
+    const st=C.maxBeta>60?'bad':C.maxBeta>45?'warn':'ok';
+    add('beta','rigging','Ângulo das pernas (a partir da vertical)',st,nf(C.maxBeta,1)+'°',st==='bad'?'Acima de 60°: aumente a altura do gancho ou use balancim.':st==='warn'?'Entre 45° e 60°: esforço nas pernas já elevado.':'Dentro do recomendado (≤ 45°).');
+  }
+  if(sl){const u=Tmax/sl.wllE;add('sling','rigging','Eslinga: '+sl.name,u>1?'bad':u>0.95?'warn':'ok',nf(u*100,0)+'% de '+nf(sl.wllE,2)+' t','Esforço máximo por perna '+nf(Tmax,2)+' t (carga de projeto com FD '+nf(R.daf,2)+'). Fator de modo '+R.mode+'.')}
+  else add('sling','rigging','Eslinga','bad','sem opção','Nenhuma eslinga na lista.');
+  if(sh){const u=Tmax/sh.wll;add('shackle','rigging','Manilha: '+sh.name,u>1?'bad':u>0.95?'warn':'ok',nf(u*100,0)+'% de '+nf(sh.wll,2)+' t','Conferir diâmetro do pino × furo do olhal e carga lateral.')}
+  if(R.master.wll>0){const u=Wd/R.master.wll;add('master','rigging','Elo mestre / gancho: '+(R.master.name||'informado'),u>1?'bad':u>0.95?'warn':'ok',nf(u*100,0)+'% de '+nf(R.master.wll,2)+' t','Carga de projeto total '+nf(Wd,2)+' t.')}
+  else add('master','rigging','Elo mestre / gancho','warn','não informado','Informe o WLL do elo mestre na aba Rigging.');
+  if(R.spreader.use){if(R.spreader.wll>0){const u=Wd/R.spreader.wll;add('spread','rigging','Balancim: '+(R.spreader.name||'informado'),u>1?'bad':u>0.95?'warn':'ok',nf(u*100,0)+'% de '+nf(R.spreader.wll,2)+' t','')}else add('spread','rigging','Balancim','warn','sem WLL','Informe o WLL do balancim.')}
+  // --- guindaste
+  C.hookLoad=0;C.cap=null;C.util=null;C.limit=E.limit;
+  if(!crane){add('crane','equip','Equipamento de içamento','bad','nenhum','Selecione um equipamento.')}
+  else if(crane.type==='mobile'){
+    const boom=crane.booms[clamp(E.boom,0,crane.booms.length-1)];C.boom=boom;
+    const hookLoad=L.mass*tol+rigT+crane.hookBlock.mass;C.hookLoad=hookLoad;
+    const geo=r=>{const x=r-crane.a,ok=x>0&&x<=boom.L;const th=ok?Math.acos(x/boom.L):NaN;return{r,th:deg(th),tip:ok?crane.hp+boom.L*Math.sin(th):NaN,ok}};
+    C.gPick=geo(+E.radPick);C.gSet=geo(+E.radSet);
+    const cp=capAt(boom.chart,+E.radPick),cs=capAt(boom.chart,+E.radSet);C.capPick=cp;C.capSet=cs;
+    const worst=[cp,cs];
+    if(worst.some(w=>w.out)){add('crane','equip','Capacidade na tabela de carga','bad','raio fora da tabela','O raio está além do último raio tabelado da lança selecionada.')}
+    else{
+      const cap=Math.min(cp.cap,cs.cap);C.cap=cap;C.util=hookLoad/cap*100;
+      const st=C.util>100?'bad':C.util>E.limit?'warn':'ok';
+      add('crane','equip','Capacidade do guindaste ('+nf(boom.L,0)+' m de lança)',st,nf(C.util,0)+'% de '+nf(cap,1)+' t','Carga no gancho '+nf(hookLoad,2)+' t (carga + tolerância + rigging + moitão). Limite adotado '+nf(E.limit,0)+'%. Raio arredondado para cima na tabela.'+(st==='warn'?' Acima do limite adotado: tratar como içamento crítico.':''));
+    }
+    for(const [g,nm] of [[C.gPick,'retirada'],[C.gSet,'posicionamento']]){
+      if(!g.ok)add('angle-'+nm,'equip','Ângulo da lança ('+nm+')','bad','alcance','Raio '+nf(g.r,1)+' m inalcançável com '+nf(boom.L,0)+' m de lança.');
+      else if(g.th<crane.minAngle||g.th>crane.maxAngle)add('angle-'+nm,'equip','Ângulo da lança ('+nm+')','bad',nf(g.th,1)+'°','Fora da faixa '+crane.minAngle+'° a '+crane.maxAngle+'°.');
+    }
+    if(C.gPick.ok&&C.gSet.ok){
+      const need=E.obst+E.margin+hookY+crane.hookBlock.h;const tip=Math.min(C.gPick.tip,C.gSet.tip);C.needTip=need;C.reserve=tip-need;
+      add('height','equip','Altura na ponta da lança',C.reserve<0?'bad':C.reserve<1?'warn':'ok','reserva '+nf(C.reserve,1)+' m','Necessário '+nf(need,1)+' m (obstáculo '+nf(E.obst,1)+' + folga '+nf(E.margin,1)+' + gancho '+nf(hookY,1)+' + moitão '+nf(crane.hookBlock.h,1)+'). Disponível '+nf(tip,1)+' m.');
+    }
+    if(E.reaction>0&&E.pad>0){const p=E.reaction/E.pad;C.press=p;add('ground','equip','Pressão sobre o solo',p>E.soil?'bad':p>0.8*E.soil?'warn':'ok',nf(p,0)+' de '+nf(E.soil,0)+' kPa','Reação do apoio '+nf(E.reaction,0)+' kN sobre '+nf(E.pad,2)+' m². Use a reação máxima fornecida pelo fabricante.')}
+    else add('ground','equip','Pressão sobre o solo','na','não calculada','Informe a reação do apoio e a área da sapata (aba Equipamento).');
+  } else {
+    const cap=E.hoist==='aux'?crane.aux:crane.rated;const hookLoad=L.mass*tol+rigT;C.hookLoad=hookLoad;C.cap=cap;C.util=hookLoad/cap*100;
+    const st=C.util>100?'bad':C.util>E.limit?'warn':'ok';
+    add('crane','equip','Capacidade da ponte ('+(E.hoist==='aux'?'auxiliar':'principal')+')',st,nf(C.util,0)+'% de '+nf(cap,1)+' t','Carga no gancho '+nf(hookLoad,2)+' t. Limite adotado '+nf(E.limit,0)+'%.');
+    const need=E.obst+E.margin+hookY;C.needTip=need;C.reserve=crane.hookMaxH-crane.hookBlock.h-need;
+    add('height','equip','Altura do gancho',C.reserve<0?'bad':C.reserve<0.5?'warn':'ok','reserva '+nf(C.reserve,1)+' m','Necessário '+nf(need,1)+' m acima do piso, disponível '+nf(crane.hookMaxH-crane.hookBlock.h,1)+' m (gancho no fim de curso, descontado o moitão).');
+  }
+  // --- vento
+  const F=0.5*1.225*E.wind*E.wind*L.windCd*L.windA/1000;C.windF=F;
+  if(E.wind>E.windMax)add('wind','equip','Vento','bad',nf(E.wind,1)+' m/s','Acima do limite de '+nf(E.windMax,1)+' m/s.');
+  else add('wind','equip','Vento',E.wind>0.8*E.windMax?'warn':'ok',nf(E.wind,1)+' m/s','Força sobre a carga ≈ '+nf(F,1)+' kN (ρ=1,225; Cd '+L.windCd+'; A '+L.windA+' m²). O limite real vem do manual do equipamento.');
+  // --- checklist
+  const pend=CHECKLIST.filter(([k])=>!S.chk[k]).length;C.pending=pend;
+  add('chk','verif','Checklist operacional',pend===0?'ok':'warn',(CHECKLIST.length-pend)+' de '+CHECKLIST.length,pend?pend+' item(ns) pendente(s).':'Completo.');
+  const sts=C.checks.map(c=>c.status);
+  C.verdict=sts.includes('bad')?'bad':sts.includes('warn')?'warn':'ok';
+  return C;
+}
+const STL={ok:'OK',warn:'ATENÇÃO',bad:'NÃO CONFORME',na:'—'};
+const chip=(s,t)=>'<span class="chip '+s+'">'+(t||STL[s])+'</span>';
+
+/* ============================== desenhos SVG (elevação, planta, tabela de carga) ============================== */
+function svgLugs(C){
+  const L=S.load,W=300,H=210,pad=34,s=Math.min((W-2*pad)/Math.max(L.L,.1),(H-2*pad)/Math.max(L.W,.1));
+  const X=x=>W/2+x*s,Y=z=>H/2+z*s;
+  let o='<svg class="draw" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Vista superior da carga com olhais">';
+  o+='<rect class="ld" x="'+X(-L.L/2)+'" y="'+Y(-L.W/2)+'" width="'+L.L*s+'" height="'+L.W*s+'"/>';
+  C.legs.forEach((l,i)=>{o+='<line class="sl" x1="'+X(L.cx)+'" y1="'+Y(L.cz)+'" x2="'+X(l.x)+'" y2="'+Y(l.z)+'"/><circle cx="'+X(l.x)+'" cy="'+Y(l.z)+'" r="5" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.6"/><text x="'+(X(l.x)+7)+'" y="'+(Y(l.z)-6)+'">'+(i+1)+'</text>'});
+  o+='<path d="M'+(X(L.cx)-7)+' '+Y(L.cz)+'h14M'+X(L.cx)+' '+(Y(L.cz)-7)+'v14" stroke="var(--bad)" stroke-width="2"/><text class="m" x="'+(X(L.cx)+9)+'" y="'+(Y(L.cz)+16)+'">CG / gancho</text>';
+  o+='<text class="m" x="8" y="'+(H-8)+'">'+nf(L.L,2)+' × '+nf(L.W,2)+' m (planta)</text></svg>';return o;
+}
+function svgElev(C){
+  const L=S.load,E=S.equip,c=C.crane;if(!c)return'';
+  const lift=+S.ui.lift||0,mobile=c.type==='mobile';
+  const R=mobile?+E.radPick:0;
+  const xs=mobile?[-3.4,R+L.L/2+2.5]:[-L.L/2-3,L.L/2+3];
+  let ymax=Math.max(C.hookY+lift+(c.hookBlock?c.hookBlock.h:1)+L.H*0,L.H)+1.5;
+  if(mobile){ymax=Math.max(ymax,(C.gPick&&C.gPick.ok?C.gPick.tip:20)+1.5)}else ymax=Math.max(ymax,c.hookMaxH+2);
+  const ymin=-1.8,W=900,Hh=Math.min(480,Math.max(260,(ymax-ymin)/(xs[1]-xs[0])*W)),m=14;
+  const s=Math.min((W-2*m)/(xs[1]-xs[0]),(Hh-2*m)/(ymax-ymin));
+  const X=x=>m+(x-xs[0])*s,Y=y=>Hh-m-(y-ymin)*s;
+  let o='<svg class="draw" viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Elevação do içamento">';
+  o+='<line class="l" x1="0" y1="'+Y(0)+'" x2="'+W+'" y2="'+Y(0)+'"/>';
+  const cx0=mobile?R-L.cx:0-L.cx, hx=mobile?R:0;
+  if(mobile&&C.gPick&&C.gPick.ok){
+    const g=C.gPick,bx=c.a,by=c.hp,tx=c.a+C.boom.L*Math.cos(rad(g.th)),ty=g.tip;
+    o+='<rect class="cr" x="'+X(-2.8)+'" y="'+Y(1.5)+'" width="'+5.6*s+'" height="'+1.5*s+'"/><rect class="cr" x="'+X(-3.2)+'" y="'+Y(3.2)+'" width="'+2.2*s+'" height="'+1.7*s+'"/>';
+    o+='<line class="bm" x1="'+X(bx)+'" y1="'+Y(by)+'" x2="'+X(tx)+'" y2="'+Y(ty)+'"/><circle cx="'+X(tx)+'" cy="'+Y(ty)+'" r="4" fill="var(--accent)"/>';
+    const bt=C.hookY+lift+c.hookBlock.h;
+    o+='<line class="g" x1="'+X(tx)+'" y1="'+Y(ty)+'" x2="'+X(tx)+'" y2="'+Y(bt)+'"/>';
+    o+='<text x="'+(X(tx)+8)+'" y="'+(Y(ty)+4)+'">ponta '+nf(ty,1)+' m</text><text class="st" x="'+(X((bx+tx)/2)-62)+'" y="'+Y((by+ty)/2)+'">θ = '+nf(g.th,1)+'°</text>';
+    o+='<line class="dim" x1="'+X(0)+'" y1="'+Y(-0.9)+'" x2="'+X(R)+'" y2="'+Y(-0.9)+'"/><line class="dim" x1="'+X(0)+'" y1="'+Y(-0.5)+'" x2="'+X(0)+'" y2="'+Y(-1.3)+'"/><line class="dim" x1="'+X(R)+'" y1="'+Y(-0.5)+'" x2="'+X(R)+'" y2="'+Y(-1.3)+'"/>';
+    o+='<text class="st" x="'+X(R/2)+'" y="'+(Y(-0.9)-5)+'" text-anchor="middle">R = '+nf(R,1)+' m</text>';
+  } else if(mobile){o+='<text x="20" y="30" fill="var(--bad)">Raio de retirada fora do alcance da lança.</text>'}
+  else{
+    const hmax=c.hookMaxH;o+='<rect class="cr" x="'+X(xs[0])+'" y="'+Y(hmax+1.4)+'" width="'+(xs[1]-xs[0])*s+'" height="'+0.9*s+'"/>';
+    o+='<line class="g" x1="'+X(0)+'" y1="'+Y(hmax+1.4)+'" x2="'+X(0)+'" y2="'+Y(C.hookY+lift+c.hookBlock.h)+'"/>';
+    o+='<line class="dim" x1="'+X(xs[0])+'" y1="'+Y(hmax)+'" x2="'+X(xs[1])+'" y2="'+Y(hmax)+'" stroke-dasharray="5 4"/><text class="st" x="'+(X(xs[0])+6)+'" y="'+(Y(hmax)-5)+'">gancho no fim de curso '+nf(hmax,1)+' m</text>';
+  }
+  // obstáculo
+  if(E.obst>0){const ox=mobile?R/2:L.L/2+1.4;o+='<rect class="ob" x="'+X(ox-.4)+'" y="'+Y(E.obst)+'" width="'+.8*s+'" height="'+E.obst*s+'"/><text class="m" x="'+(X(ox)+.5*s)+'" y="'+(Y(E.obst)-4)+'">obstáculo '+nf(E.obst,1)+' m</text>'}
+  // carga e rigging
+  const bx0=hx-L.cx-L.L/2,by0=lift,bt=lift+C.hookY+(c.hookBlock?c.hookBlock.h:1);
+  o+='<rect class="ld" x="'+X(bx0)+'" y="'+Y(by0+L.H)+'" width="'+L.L*s+'" height="'+L.H*s+'"/>';
+  C.legs.forEach(l=>{const lx=hx-L.cx+l.x;o+='<line class="sl" x1="'+X(hx)+'" y1="'+Y(lift+C.hookY)+'" x2="'+X(lx)+'" y2="'+Y(lift+l.y)+'"/><circle cx="'+X(lx)+'" cy="'+Y(lift+l.y)+'" r="3" fill="var(--panel)" stroke="var(--ink)"/>'});
+  o+='<rect x="'+(X(hx)-7)+'" y="'+Y(bt)+'" width="14" height="'+(c.hookBlock?c.hookBlock.h:1)*s+'" fill="var(--ink)"/>';
+  o+='<path d="M'+(X(hx)-6)+' '+Y(lift+L.cy)+'h12M'+X(hx)+' '+(Y(lift+L.cy)-6)+'v12" stroke="var(--bad)" stroke-width="2"/>';
+  o+='<text class="m" x="'+(X(bx0+L.L)+6)+'" y="'+(Y(by0+L.H/2)+4)+'">'+nf(S.load.mass,1)+' t</text>';
+  o+='</svg>';return o;
+}
+function svgPlan(C){
+  const L=S.load,E=S.equip,c=C.crane;if(!c)return'';
+  const mobile=c.type==='mobile',R=mobile?+E.radPick:0,Rs=mobile?+E.radSet:0;
+  const W=900,Hh=360,m=24;let x0,x1,z0,z1;
+  if(mobile){const r=Math.max(R,Rs)+L.L;x0=-4;x1=r+2;z0=-Math.max(r/2.4,L.W+3);z1=-z0}else{x0=-c.span/2;x1=c.span/2;z0=-L.W-2;z1=L.W+2}
+  const s=Math.min((W-2*m)/(x1-x0),(Hh-2*m)/(z1-z0)),X=x=>m+(x-x0)*s,Y=z=>Hh/2+z*s;
+  let o='<svg class="draw" viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="Planta do içamento">';
+  if(mobile){
+    o+='<rect class="cr" x="'+X(-2.8)+'" y="'+Y(-1.4)+'" width="'+5.6*s+'" height="'+2.8*s+'"/><circle class="g" cx="'+X(0)+'" cy="'+Y(0)+'" r="'+3.6*s+'" fill="none" stroke-dasharray="3 3"/>';
+    [[R,'retirada'],[Rs,'posicionamento']].forEach(([r,nm],i)=>{o+='<circle class="dim" cx="'+X(0)+'" cy="'+Y(0)+'" r="'+r*s+'" stroke-dasharray="'+(i?'2 4':'6 4')+'"/>'});
+    o+='<line class="bm" style="stroke-width:3" x1="'+X(0)+'" y1="'+Y(0)+'" x2="'+X(R)+'" y2="'+Y(0)+'"/>';
+    o+='<text class="st" x="'+X(R/2)+'" y="'+(Y(0)-8)+'" text-anchor="middle">R retirada '+nf(R,1)+' m</text>';
+    if(Math.abs(Rs-R)>0.05)o+='<text class="st" x="'+X(Rs)+'" y="'+(Y(0)+(Rs*s>0?Hh/2-m:0)-0)+'" text-anchor="middle" opacity="0">.</text><text class="st" x="'+(X(0)+Rs*s*0.72)+'" y="'+(Y(0)+Rs*s*0.69)+'">R posicionamento '+nf(Rs,1)+' m</text>';
+    o+='<rect class="ld" x="'+X(R-L.cx-L.L/2)+'" y="'+Y(-L.cz-L.W/2)+'" width="'+L.L*s+'" height="'+L.W*s+'"/>';
+  } else {
+    o+='<rect class="cr" x="'+X(x0)+'" y="'+Y(-.25)+'" width="'+c.span*s+'" height="'+.5*s+'"/><text class="m" x="'+X(x0)+'" y="'+(Y(-.25)-6)+'">vão '+nf(c.span,1)+' m</text>';
+    o+='<rect class="ld" x="'+X(-L.cx-L.L/2)+'" y="'+Y(-L.cz-L.W/2)+'" width="'+L.L*s+'" height="'+L.W*s+'"/>';
+  }
+  o+='</svg>';return o;
+}
+function svgChart(C){
+  const c=C.crane;if(!c||c.type!=='mobile'||!C.boom)return'<p class="note">Gráfico disponível para guindastes móveis.</p>';
+  const ch=[...C.boom.chart].sort((a,b)=>a[0]-b[0]),W=720,H=320,ml=46,mr=14,mt=14,mb=36;
+  const xmax=Math.max(ch[ch.length-1][0],+S.equip.radPick,+S.equip.radSet)*1.05,ymax=Math.max(...ch.map(r=>r[1]),C.hookLoad)*1.1;
+  const X=x=>ml+x/xmax*(W-ml-mr),Y=y=>H-mb-y/ymax*(H-mt-mb);
+  const tick=(mx,n)=>{const raw=mx/n,p=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/p,st=(f<1.5?1:f<3?2:f<7?5:10)*p,a=[];for(let v=0;v<=mx;v+=st)a.push(v);return a};
+  let o='<svg class="draw" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Tabela de carga e ponto de operação">';
+  tick(ymax,5).forEach(v=>{o+='<line class="g" stroke-opacity=".25" x1="'+ml+'" x2="'+(W-mr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'"/><text class="m" x="'+(ml-6)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+nf(v,0)+'</text>'});
+  tick(xmax,8).forEach(v=>{o+='<line class="g" stroke-opacity=".25" y1="'+mt+'" y2="'+(H-mb)+'" x1="'+X(v)+'" x2="'+X(v)+'"/><text class="m" y="'+(H-mb+16)+'" x="'+X(v)+'" text-anchor="middle">'+nf(v,0)+'</text>'});
+  o+='<polyline fill="none" stroke="var(--steel)" stroke-width="2.4" points="'+ch.map(r=>X(r[0])+','+Y(r[1])).join(' ')+'"/>';
+  ch.forEach(r=>{o+='<circle cx="'+X(r[0])+'" cy="'+Y(r[1])+'" r="2.6" fill="var(--steel)"/>'});
+  const col=C.util==null?'var(--na)':C.util>100?'var(--bad)':C.util>S.equip.limit?'var(--warn)':'var(--ok)';
+  (Math.abs(S.equip.radPick-S.equip.radSet)<1e-6?[[+S.equip.radPick,'retirada = posicionamento']]:[[+S.equip.radPick,'retirada'],[+S.equip.radSet,'posic.']]).forEach(([r,n],i)=>{o+='<line x1="'+X(r)+'" x2="'+X(r)+'" y1="'+Y(0)+'" y2="'+Y(C.hookLoad)+'" stroke="'+col+'" stroke-dasharray="3 3"/><circle cx="'+X(r)+'" cy="'+Y(C.hookLoad)+'" r="6" fill="'+col+'" stroke="var(--panel)" stroke-width="2"/><text x="'+(X(r)+9)+'" y="'+(Y(C.hookLoad)-8-i*12)+'">'+n+'</text>'});
+  o+='<text class="m" x="'+(W/2)+'" y="'+(H-4)+'" text-anchor="middle">raio (m)</text><text class="m" x="12" y="'+(mt+8)+'">t</text></svg>';
+  return o;
+}
+
+/* ============================== componentes de formulário ============================== */
+function F(label,path,o={}){
+  const v=getp(S,path);const t=o.type||(typeof v==='number'?'number':'text');
+  return '<label class="f'+(o.wide?' wide':'')+'"><span>'+esc(label)+'</span><input id="i-'+path.replace(/\./g,'-')+'" data-b="'+path+'" type="'+t+'"'+(t==='number'?' step="'+(o.step||'any')+'" inputmode="decimal"':'')+' value="'+esc(v)+'"'+(o.rr?' data-rr="1"':'')+'></label>';
+}
+function SEL(label,path,opts,o={}){
+  const v=getp(S,path);
+  return '<label class="f'+(o.wide?' wide':'')+'"><span>'+esc(label)+'</span><select id="i-'+path.replace(/\./g,'-')+'" data-b="'+path+'"'+(o.num?' data-num="1"':'')+(o.rr?' data-rr="1"':'')+'>'+opts.map(([val,lb])=>'<option value="'+esc(val)+'"'+(String(val)===String(v)?' selected':'')+'>'+esc(lb)+'</option>').join('')+'</select></label>';
+}
+function TA(label,path){return '<label class="f wide"><span>'+esc(label)+'</span><textarea id="i-'+path.replace(/\./g,'-')+'" data-b="'+path+'">'+esc(getp(S,path))+'</textarea></label>'}
+const live=n=>'<div data-live="'+n+'"></div>';
+
+/* ============================== abas ============================== */
+const VIEWS={},MOUNT={},LIVE={};
+let C=calc(),tab='projeto',stage=null,modelStage=null;
+
+/* ---------- Projeto ---------- */
+VIEWS.projeto=()=>`
+<h2>Projeto</h2>
+<p class="lead">Identificação do plano. Estes dados saem no cabeçalho do relatório. O projeto é salvo automaticamente neste navegador.</p>
+<div class="card"><div class="grid">${F('Nome do projeto','meta.project',{wide:1})}${F('Cliente / planta','meta.client')}${F('Local / unidade','meta.site')}${F('TAG do equipamento','meta.tag')}${F('Revisão','meta.rev')}${F('Data','meta.date',{type:'date'})}${F('Elaborado por','meta.author')}${F('Verificado por','meta.reviewer')}${F('Nº da ART / registro','meta.art')}${TA('Observações','meta.notes')}</div></div>
+<div class="card"><h3>Salvar e abrir projeto</h3>
+<p class="note">Copie o texto abaixo para guardar o projeto em um arquivo seu. Para abrir, cole o texto na caixa e use "Carregar", ou escolha um arquivo .json.</p>
+<div class="row" style="margin:10px 0"><button class="btn" data-act="exportJSON">Gerar texto do projeto</button><button class="btn" data-act="copyJSON">Copiar</button><button class="btn primary" data-act="importJSON">Carregar texto colado</button><label class="btn">Abrir arquivo .json<input type="file" id="f-json" accept=".json,application/json" hidden></label></div>
+<textarea id="json-box" placeholder="O texto do projeto aparece aqui"></textarea>
+<div class="row" style="margin-top:10px"><button class="btn" data-act="example">Recarregar o exemplo</button><button class="btn" data-act="newProj">Novo projeto em branco</button><span id="np-confirm"></span></div></div>
+<div class="warnbox">Protótipo para validar o conceito. Os dados de guindastes são fictícios e os de acessórios são valores de referência. Nenhum plano deve ser executado sem conferência com os catálogos e tabelas de carga oficiais e validação do responsável técnico.</div>`;
+
+/* ---------- Carga ---------- */
+VIEWS.carga=()=>{
+  const L=S.load;
+  return `<h2>Carga</h2>
+<p class="lead">Dados do equipamento ou material a ser içado. Origem das coordenadas: centro da face inferior. X ao longo do comprimento, Z ao longo da largura, Y para cima.</p>
+<div class="card"><h3>Identificação e massa</h3><div class="grid">
+${F('Descrição da carga','load.name',{wide:1})}${SEL('Tipo de equipamento','load.cat',EQUIP_TYPES.map(x=>[x,x]))}
+${F('Massa (t)','load.mass')}${SEL('Fonte da massa','load.massSrc',['Folha de dados','Pesagem','Modelo CAD','Estimativa'].map(x=>[x,x]))}${F('Tolerância de massa (%)','load.tol')}
+</div><p class="note" style="margin-top:8px">Estimativa e modelo CAD geram incerteza maior. Em equipamentos ocos (vasos, tanques) o volume do CAD não representa a massa real. Prefira folha de dados ou pesagem.</p></div>
+<div class="card"><h3>Geometria e centro de gravidade</h3><div class="grid">
+${F('Comprimento X (m)','load.L')}${F('Largura Z (m)','load.W')}${F('Altura Y (m)','load.H')}
+${F('CG em X (m)','load.cx')}${F('CG em Z (m)','load.cz')}${F('CG em Y, altura (m)','load.cy')}
+${F('Área exposta ao vento (m²)','load.windA')}${F('Coeficiente de arrasto','load.windCd')}</div></div>
+<div class="grid c2"><div class="card"><h3>Pontos de içamento (olhais)</h3>
+<div class="scroll"><table><thead><tr><th>#</th><th class="num">X (m)</th><th class="num">Z (m)</th><th class="num">Y (m)</th><th></th></tr></thead><tbody>
+${L.lugs.map((l,i)=>`<tr><td>${i+1}</td><td><input type="number" step="any" data-b="load.lugs.${i}.x" value="${l.x}" aria-label="X do olhal ${i+1}"></td><td><input type="number" step="any" data-b="load.lugs.${i}.z" value="${l.z}" aria-label="Z do olhal ${i+1}"></td><td><input type="number" step="any" data-b="load.lugs.${i}.y" value="${l.y}" aria-label="Y do olhal ${i+1}"></td><td><button class="btn sm" data-act="delLug" data-arg="${i}">Remover</button></td></tr>`).join('')}
+</tbody></table></div>
+<div class="row" style="margin-top:10px"><button class="btn" data-act="addLug">Adicionar olhal</button></div>
+<h3 style="margin-top:16px">Gerar olhais simétricos</h3><div class="grid">${SEL('Quantidade','load.gen.n',[[2,'2 olhais'],[4,'4 olhais']],{num:1})}${F('Distância em X (m)','load.gen.dx')}${F('Distância em Z (m)','load.gen.dz')}${F('Altura Y (m)','load.gen.y')}</div>
+<div class="row" style="margin-top:10px"><button class="btn" data-act="genLugs">Gerar em torno do CG</button></div></div>
+<div class="card"><h3>Vista superior</h3>${live('lugsvg')}</div></div>`;
+};
+LIVE.lugsvg=C=>svgLugs(C)+'<p class="note" style="margin-top:8px">Cruz vermelha: CG e posição do gancho. Linhas azuis: pernas de eslinga.</p>';
+
+/* ---------- Desenho e modelo ---------- */
+VIEWS.modelo=()=>`
+<h2>Desenho e modelo</h2>
+<p class="lead">Carregue desenhos para medir dimensões ou um modelo 3D para obter volume, massa estimada e centro de gravidade.</p>
+<div class="card"><div class="drop" id="drop"><p><b>Arraste um arquivo aqui</b> ou escolha abaixo</p><p class="note" style="margin:6px auto 12px">DXF (2D) · PDF e imagens (medição com escala) · STL e STEP (3D)</p>
+<label class="btn primary">Escolher arquivo<input type="file" id="f-draw" accept=".dxf,.pdf,.png,.jpg,.jpeg,.stl,.step,.stp,.dwg" hidden></label></div>
+<p class="note" style="margin-top:10px"><b>DWG:</b> salve como DXF no AutoCAD (Salvar como → DXF) e carregue o DXF. <b>STEP:</b> funciona ao abrir este arquivo diretamente no computador; no visualizador online o conversor é bloqueado. Alternativa: exportar o modelo para STL.</p>
+<div id="load-msg" class="note" style="margin-top:8px"></div></div>
+<div id="d2-wrap" hidden><div class="card"><div class="row" style="margin-bottom:10px">
+<button class="btn" data-act="tool" data-arg="pan" aria-pressed="true" id="t-pan">Mover</button><button class="btn" data-act="tool" data-arg="measure" aria-pressed="false" id="t-measure">Medir</button><button class="btn" data-act="tool" data-arg="calibrate" aria-pressed="false" id="t-calibrate">Calibrar escala</button><button class="btn" data-act="fit">Ajustar à tela</button>
+<span id="d2-unit"></span><span id="d2-info" class="note"></span></div>
+<canvas id="c2d" class="c2d"></canvas><div id="cal-form" class="row" style="margin-top:10px" hidden></div>
+<div id="layers" class="row note" style="margin-top:8px"></div></div>
+<div class="card"><h3>Medidas</h3><div id="meas"></div></div></div>
+<div id="m3-wrap" hidden><div class="card"><h3>Modelo 3D</h3><div class="stage" id="m3"></div><div id="m3-stats" style="margin-top:12px"></div>
+<div class="grid" style="margin-top:12px">${SEL('Eixo vertical do modelo','ui.up',[['z','Z para cima (padrão CAD)'],['y','Y para cima'],['x','X para cima']],{rr:1})}${SEL('Unidade do modelo','ui.munit',[['mm','milímetros'],['cm','centímetros'],['m','metros'],['in','polegadas']],{rr:1})}${SEL('Material','ui.mat',MATERIALS.map(m=>[m[1],m[0]+' ('+m[1]+' kg/m³)']),{num:1,rr:1})}${F('Fator de preenchimento (%)','ui.fill',{rr:1})}</div>
+<p class="note" style="margin:8px 0">Fator de preenchimento: use 100 para peça maciça. Para equipamento oco, o volume do CAD superestima a massa; prefira a massa da folha de dados.</p>
+<div class="row"><button class="btn primary" data-act="applyModel">Aplicar dimensões, CG e massa à carga</button><button class="btn" data-act="applyModelDims">Aplicar só dimensões e CG</button></div></div></div>`;
+
+/* ---------- Equipamento ---------- */
+VIEWS.equip=()=>{
+  const E=S.equip,c=allCranes().find(x=>x.id===E.craneId);
+  return `<h2>Equipamento de içamento</h2>
+<p class="lead">Escolha o guindaste ou a ponte rolante e informe a geometria do içamento. A capacidade vem da tabela de carga cadastrada.</p>
+<div class="warnbox">Os equipamentos marcados como EXEMPLO FICTÍCIO existem só para demonstrar o cálculo. Cadastre a tabela de carga real do seu equipamento (seção abaixo) antes de qualquer uso.</div>
+<div class="card"><div class="grid">${SEL('Equipamento','equip.craneId',allCranes().map(x=>[x.id,x.name+(x.example?'':' (usuário)')]),{rr:1,wide:1})}
+${c&&c.type==='mobile'?SEL('Comprimento de lança','equip.boom',c.booms.map((b,i)=>[i,b.L+' m']),{num:1,rr:1}):SEL('Gancho da ponte','equip.hoist',[['main','Principal'],['aux','Auxiliar']],{rr:1})}
+${c&&c.type==='mobile'?F('Raio de retirada (m)','equip.radPick')+F('Raio de posicionamento (m)','equip.radSet'):''}
+${F('Altura do maior obstáculo no trajeto (m)','equip.obst')}${F('Folga vertical mínima (m)','equip.margin')}${F('Limite de utilização adotado (%)','equip.limit')}</div></div>
+<div class="grid c2"><div class="card"><h3>Capacidade × carga</h3>${live('cranekv')}${live('chart')}</div><div class="card"><h3>Elevação</h3>${live('elev')}</div></div>
+<div class="grid c2"><div class="card"><h3>Solo e apoios</h3><div class="grid">${F('Reação máxima do apoio (kN)','equip.reaction')}${F('Área da sapata/placa (m²)','equip.pad')}${F('Pressão admissível do solo (kPa)','equip.soil')}</div><p class="note" style="margin-top:8px">A reação do apoio vem do fabricante para a configuração real (contrapeso, estabilizadores, lança).</p></div>
+<div class="card"><h3>Vento</h3><div class="grid">${F('Velocidade prevista (m/s)','equip.wind')}${F('Limite do equipamento (m/s)','equip.windMax')}</div></div></div>
+<div class="card"><h3>Cadastrar equipamento próprio</h3>
+<p class="note">Para guindaste móvel, cole a tabela de carga, uma linha por ponto, no formato <code>lança(m); raio(m); capacidade(t)</code>.</p>
+<div class="grid" style="margin-top:10px">${'<label class="f"><span>Nome</span><input id="nc-name" placeholder="Ex.: Liebherr LTM 1100"></label>'}
+<label class="f"><span>Tipo</span><select id="nc-type"><option value="mobile">Guindaste móvel</option><option value="bridge">Ponte rolante</option></select></label>
+<label class="f"><span>Altura do pé da lança (m)</span><input id="nc-hp" type="number" step="any" value="2.5"></label>
+<label class="f"><span>Recuo do pé da lança (m)</span><input id="nc-a" type="number" step="any" value="1.5"></label>
+<label class="f"><span>Ângulo mín./máx. da lança (°)</span><input id="nc-ang" value="20-80"></label>
+<label class="f"><span>Massa do moitão (t) / altura (m)</span><input id="nc-hb" value="1.0 / 1.5"></label>
+<label class="f"><span>Ponte: capacidade principal / auxiliar (t)</span><input id="nc-cap" value="50 / 10"></label>
+<label class="f"><span>Ponte: altura máx. do gancho (m)</span><input id="nc-hmax" type="number" step="any" value="9"></label>
+<label class="f wide"><span>Tabela de carga (lança; raio; capacidade)</span><textarea id="nc-chart" placeholder="32; 10; 40&#10;32; 12; 32&#10;32; 14; 26"></textarea></label></div>
+<div class="row" style="margin-top:10px"><button class="btn primary" data-act="addCrane">Cadastrar equipamento</button><span id="nc-msg" class="note"></span></div></div>`;
+};
+LIVE.cranekv=C=>{
+  const c=C.crane;if(!c)return'';
+  const k=(a,b,u)=>'<div><small>'+a+'</small><b>'+b+(u?' <em>'+u+'</em>':'')+'</b></div>';
+  return '<div class="kv">'+k('Carga no gancho',nf(C.hookLoad,2),'t')+k('Capacidade',C.cap!=null?nf(C.cap,1):'–','t')+k('Utilização',C.util!=null?nf(C.util,0):'–','%')+
+    (c.type==='mobile'&&C.gPick?k('Ângulo da lança',C.gPick.ok?nf(C.gPick.th,1):'–','°')+k('Ponta da lança',C.gPick.ok?nf(C.gPick.tip,1):'–','m'):'')+k('Reserva de altura',C.reserve!=null?nf(C.reserve,1):'–','m')+'</div><div style="margin-top:8px">'+chip(C.util==null?'na':C.util>100?'bad':C.util>S.equip.limit?'warn':'ok',C.util==null?'sem dado':null)+'</div>';
+};
+LIVE.chart=C=>svgChart(C);
+LIVE.elev=C=>svgElev(C);
+
+/* ---------- Rigging ---------- */
+VIEWS.rigging=()=>{
+  const R=S.rig;
+  return `<h2>Rigging</h2>
+<p class="lead">Eslingas, manilhas e demais acessórios. O programa escolhe o menor item que atende ao esforço da perna mais carregada e você pode trocar manualmente.</p>
+<div class="card"><h3>Configuração das pernas</h3><div class="grid">
+${SEL('Tipo de eslinga','rig.kind',[['wire','Cabo de aço'],['web','Cinta têxtil'],['chain','Corrente']],{rr:1})}
+${SEL('Modo de uso','rig.mode',[[1,'Reto (fator 1,0)'],[0.8,'Laço / estrangulado (0,8)']],{num:1,rr:1})}
+${R.kind==='wire'?SEL('Classe do arame (MPa)','rig.grade',[[1770,'1770'],[1960,'1960']],{num:1,rr:1})+F('Eficiência do terminal','rig.eff',{rr:1}):''}
+${R.kind==='chain'?SEL('Classe da corrente','rig.chainG',[[80,'Classe 80'],[100,'Classe 100']],{num:1,rr:1}):''}
+${F('Fator dinâmico (FD)','rig.daf')}${F('Altura do gancho acima dos olhais (m)','rig.hookH')}
+${SEL('Distribuição da carga','rig.dist',[['static','Equilíbrio de corpo rígido'],['cons','Conservadora (2 pernas efetivas)']])}</div>
+<p class="note" style="margin-top:8px">A carga de projeto das pernas usa FD × (massa com tolerância + rigging). Eficiência do terminal: ~0,80 para olhal manual, ~0,90 para terminal prensado (valor de referência, conferir com o fabricante).</p></div>
+<div class="card"><h3>Esforço por perna</h3>${live('legs')}</div>
+<div class="card"><h3>Eslingas disponíveis</h3>${live('slings')}</div>
+<div class="card"><h3>Manilhas</h3>${live('shackles')}</div>
+<div class="card"><h3>Elo mestre, balancim e extras</h3><div class="grid">
+${F('Elo mestre / gancho: descrição','rig.master.name')}${F('WLL do elo mestre (t)','rig.master.wll')}${F('Massa do elo mestre (kg)','rig.master.mass')}
+<label class="f"><span>Usa balancim / viga de içamento</span><select data-b="rig.spreader.use" data-bool="1" data-rr="1"><option value="false"${!R.spreader.use?' selected':''}>Não</option><option value="true"${R.spreader.use?' selected':''}>Sim</option></select></label>
+${R.spreader.use?F('Balancim: descrição','rig.spreader.name')+F('WLL do balancim (t)','rig.spreader.wll')+F('Massa do balancim (kg)','rig.spreader.mass'):''}
+${F('Outros itens no gancho (kg)','rig.extra')}</div></div>`;
+};
+LIVE.legs=C=>{
+  if(!C.n)return'<p class="note">Sem olhais cadastrados.</p>';
+  return '<div class="scroll"><table><thead><tr><th>Perna</th><th class="num">Ângulo (°)</th><th class="num">Comprimento geom. (m)</th><th class="num">Parcela vertical (t)</th><th class="num">Esforço na perna (t)</th></tr></thead><tbody>'+
+    C.legs.map((l,i)=>'<tr><td>'+(i+1)+'</td><td class="num">'+nf(l.beta,1)+'</td><td class="num">'+nf(l.len,2)+'</td><td class="num">'+nf(C.shares[i],2)+'</td><td class="num"><b>'+nf(C.T[i],2)+'</b></td></tr>').join('')+
+    '</tbody></table></div><p class="note" style="margin-top:8px">Carga de projeto total: '+nf(C.Wd,2)+' t · Massa do rigging calculada: '+nf(C.rigT*1000,0)+' kg. O comprimento é geométrico (centro a centro dos pontos); acrescente o comprimento dos terminais ao especificar a eslinga.</p>';
+};
+LIVE.slings=C=>{
+  const sel=S.rig.slingId;
+  return '<div class="scroll"><table><thead><tr><th>Eslinga</th><th class="num">WLL efetivo (t)</th><th class="num">Utilização</th><th>Fonte</th><th></th></tr></thead><tbody>'+
+    C.cands.map(s=>{const u=C.Tmax/s.wllE,picked=C.sl&&C.sl.id===s.id;return '<tr class="'+(picked?'sel':'')+'"><td>'+esc(s.name)+'</td><td class="num">'+nf(s.wllE,2)+'</td><td class="num">'+chip(u>1?'bad':u>0.95?'warn':'ok',nf(u*100,0)+'%')+'</td><td class="note">'+esc(s.src)+'</td><td><button class="btn sm" data-act="pickSling" data-arg="'+s.id+'">'+(picked?'Em uso':'Usar')+'</button></td></tr>'}).join('')+
+    '</tbody></table></div><div class="row" style="margin-top:8px"><button class="btn sm" data-act="pickSling" data-arg="auto" '+(sel==='auto'?'aria-pressed="true"':'')+'>Seleção automática</button></div>';
+};
+LIVE.shackles=C=>{
+  const sel=S.rig.shackleId;
+  return '<div class="scroll"><table><thead><tr><th>Manilha</th><th class="num">WLL (t)</th><th class="num">Massa (kg)</th><th class="num">Utilização</th><th></th></tr></thead><tbody>'+
+    C.shl.filter(s=>s.wll>=C.Tmax*0.5||(C.sh&&s.id===C.sh.id)).slice(0,14).map(s=>{const u=C.Tmax/s.wll,picked=C.sh&&C.sh.id===s.id;return '<tr class="'+(picked?'sel':'')+'"><td>'+esc(s.name)+'</td><td class="num">'+nf(s.wll,2)+'</td><td class="num">'+nf(s.mass,2)+'</td><td class="num">'+chip(u>1?'bad':u>0.95?'warn':'ok',nf(u*100,0)+'%')+'</td><td><button class="btn sm" data-act="pickShackle" data-arg="'+s.id+'">'+(picked?'Em uso':'Usar')+'</button></td></tr>'}).join('')+
+    '</tbody></table></div><div class="row" style="margin-top:8px"><button class="btn sm" data-act="pickShackle" data-arg="auto" '+(sel==='auto'?'aria-pressed="true"':'')+'>Seleção automática</button></div>';
+};
+
+/* ---------- Verificações ---------- */
+VIEWS.verif=()=>`<h2>Verificações</h2>
+<p class="lead">Resumo de todas as conferências do plano. Itens em vermelho impedem a liberação.</p>
+<div class="card">${live('checks')}</div>
+<div class="card checks"><h3>Checklist operacional</h3>${CHECKLIST.map(([k,t])=>`<label><input type="checkbox" data-chk="${k}"${S.chk[k]?' checked':''}><span>${esc(t)}</span></label>`).join('')}
+<p class="note" style="margin-top:10px">Lista genérica de referência. Ajuste às NRs aplicáveis (por exemplo NR-11 e NR-12), às normas ABNT/ASME e aos procedimentos internos.</p></div>`;
+LIVE.checks=C=>'<div class="scroll"><table><thead><tr><th>Verificação</th><th>Resultado</th><th>Status</th><th>Detalhe</th></tr></thead><tbody>'+C.checks.map(c=>'<tr><td>'+esc(c.label)+'</td><td class="num">'+esc(c.value)+'</td><td>'+chip(c.status)+'</td><td class="note">'+esc(c.detail)+'</td></tr>').join('')+'</tbody></table></div>';
+
+/* ---------- Visualização ---------- */
+VIEWS.viz=()=>`<h2>Visualização</h2>
+<p class="lead">Modelo 3D do içamento (arraste para girar, role para aproximar, Shift + arrastar para mover) e desenhos 2D em escala.</p>
+<div class="card"><div class="row" style="margin-bottom:10px"><button class="btn" data-act="view" data-arg="iso">Isométrica</button><button class="btn" data-act="view" data-arg="front">Frontal</button><button class="btn" data-act="view" data-arg="side">Lateral</button><button class="btn" data-act="view" data-arg="top">Topo</button>
+<label class="f" style="flex-direction:row;align-items:center;gap:8px;margin-left:auto"><span>Elevar carga (m)</span><input id="lift" type="number" step="0.5" min="0" style="width:90px" data-b="ui.lift" value="${S.ui.lift}" data-viz="1"></label></div>
+<div class="stage" id="stage"></div>
+<div class="legend" style="margin-top:8px"><span><i style="background:var(--accent)"></i>lança / carga</span><span><i style="background:var(--ok)"></i>eslinga ≤ 70%</span><span><i style="background:var(--warn)"></i>70–100%</span><span><i style="background:var(--bad)"></i>acima de 100%</span><span>esfera vermelha: CG</span></div></div>
+<div class="card"><h3>Elevação</h3>${live('elev')}</div><div class="card"><h3>Planta</h3>${live('plan')}</div>`;
+LIVE.plan=C=>svgPlan(C);
+
+/* ---------- Relatório ---------- */
+VIEWS.rel=()=>`<h2>Relatório</h2><p class="lead">Documento do plano de içamento. Copie o texto para colar em outro documento. Ao abrir este arquivo no computador, Ctrl+P gera o PDF.</p>
+<div class="row noprint"><button class="btn primary" data-act="copyReport">Copiar relatório em texto</button><span id="rep-msg" class="note"></span></div>
+<div class="doc" id="doc">${live('report')}</div>`;
+LIVE.report=C=>{
+  const M=S.meta,L=S.load,R=S.rig,E=S.equip,c=C.crane;
+  const kv=(a,b)=>'<div><small>'+a+'</small><b style="font-size:15px">'+b+'</b></div>';
+  return `<h2>Plano de içamento · ${esc(M.tag||M.project)}</h2>
+<div class="kv">${kv('Projeto',esc(M.project))}${kv('Cliente / local',esc((M.client||'–')+' · '+(M.site||'–')))}${kv('Revisão / data',esc(M.rev)+' · '+esc(M.date))}${kv('Elaborado por',esc(M.author||'–'))}${kv('ART / registro',esc(M.art||'–'))}${kv('Resultado dos cálculos',chip(C.verdict,C.verdict==='ok'?'SEM NÃO CONFORMIDADE':null))}</div>
+<h3>1. Carga</h3><div class="kv">${kv('Descrição',esc(L.name))}${kv('Massa',nf(L.mass,3)+' t ('+esc(L.massSrc)+', ±'+L.tol+'%)')}${kv('Dimensões',nf(L.L,2)+' × '+nf(L.W,2)+' × '+nf(L.H,2)+' m')}${kv('Centro de gravidade','X '+nf(L.cx,2)+' · Z '+nf(L.cz,2)+' · Y '+nf(L.cy,2)+' m')}</div>
+<div style="max-width:420px;margin-top:10px">${svgLugs(C)}</div>
+<h3>2. Equipamento de içamento</h3><div class="kv">${kv('Equipamento',esc(c?c.name:'–'))}${c&&c.type==='mobile'?kv('Lança',C.boom?nf(C.boom.L,0)+' m':'–')+kv('Raios',nf(E.radPick,1)+' m / '+nf(E.radSet,1)+' m'):kv('Gancho',E.hoist==='aux'?'Auxiliar':'Principal')}${kv('Carga no gancho',nf(C.hookLoad,2)+' t')}${kv('Capacidade',C.cap!=null?nf(C.cap,1)+' t':'–')}${kv('Utilização',C.util!=null?nf(C.util,0)+'% (limite '+E.limit+'%)':'–')}</div>
+<h3>3. Rigging</h3><div class="scroll"><table><thead><tr><th>Item</th><th>Especificação</th><th class="num">WLL (t)</th><th class="num">Esforço (t)</th></tr></thead><tbody>
+<tr><td>Eslinga ×${C.n}</td><td>${esc(C.sl?C.sl.name:'–')} · modo ${R.mode}</td><td class="num">${C.sl?nf(C.sl.wllE,2):'–'}</td><td class="num">${nf(C.Tmax,2)}</td></tr>
+<tr><td>Manilha ×${C.n}</td><td>${esc(C.sh?C.sh.name:'–')}</td><td class="num">${C.sh?nf(C.sh.wll,2):'–'}</td><td class="num">${nf(C.Tmax,2)}</td></tr>
+<tr><td>Elo mestre</td><td>${esc(R.master.name||'não informado')}</td><td class="num">${R.master.wll>0?nf(R.master.wll,2):'–'}</td><td class="num">${nf(C.Wd,2)}</td></tr></tbody></table></div>
+<p class="note" style="margin-top:6px">Fator dinâmico ${nf(R.daf,2)} · altura do gancho acima dos olhais ${nf(R.hookH,2)} m · massa do rigging ${nf(C.rigT*1000,0)} kg.</p>
+<div class="scroll" style="margin-top:8px"><table><thead><tr><th>Perna</th><th class="num">Ângulo (°)</th><th class="num">Comprimento (m)</th><th class="num">Esforço (t)</th></tr></thead><tbody>${C.legs.map((l,i)=>'<tr><td>'+(i+1)+'</td><td class="num">'+nf(l.beta,1)+'</td><td class="num">'+nf(l.len,2)+'</td><td class="num">'+nf(C.T[i],2)+'</td></tr>').join('')}</tbody></table></div>
+<h3>4. Geometria do içamento</h3>${svgElev(C)}<div style="height:10px"></div>${svgPlan(C)}
+<h3>5. Verificações</h3>${LIVE.checks(C)}
+<h3>6. Checklist</h3><div class="scroll"><table><tbody>${CHECKLIST.map(([k,t])=>'<tr><td style="width:30px">'+(S.chk[k]?'[x]':'[ ]')+'</td><td>'+esc(t)+'</td></tr>').join('')}</tbody></table></div>
+${M.notes?'<h3>Observações</h3><p>'+esc(M.notes).replace(/\n/g,'<br>')+'</p>':''}
+${S.src.length?'<h3>Fontes de desenho/modelo</h3><p>'+S.src.map(esc).join(' · ')+'</p>':''}
+<div class="sign"><div>Elaborado por: ${esc(M.author)}</div><div>Verificado por: ${esc(M.reviewer)}</div><div>Responsável técnico / ART ${esc(M.art)}</div></div>
+<p class="note" style="margin-top:14px">Documento gerado por protótipo. Os valores devem ser conferidos com catálogos, tabelas de carga e normas vigentes antes da execução.</p>`;
+};
+function reportText(C){
+  const M=S.meta,L=S.load,R=S.rig,E=S.equip,c=C.crane;
+  const lines=['PLANO DE IÇAMENTO · '+(M.tag||M.project),'Projeto: '+M.project,'Cliente/local: '+(M.client||'-')+' / '+(M.site||'-'),'Revisão '+M.rev+' · '+M.date+' · Elaborado por '+(M.author||'-'),'',
+    'CARGA: '+L.name+' · '+nf(L.mass,3)+' t ('+L.massSrc+', ±'+L.tol+'%) · '+nf(L.L,2)+' x '+nf(L.W,2)+' x '+nf(L.H,2)+' m · CG X '+nf(L.cx,2)+' Z '+nf(L.cz,2)+' Y '+nf(L.cy,2),
+    'EQUIPAMENTO: '+(c?c.name:'-')+(c&&c.type==='mobile'&&C.boom?' · lança '+C.boom.L+' m · raios '+E.radPick+'/'+E.radSet+' m':'')+' · carga no gancho '+nf(C.hookLoad,2)+' t · capacidade '+(C.cap!=null?nf(C.cap,1):'-')+' t · utilização '+(C.util!=null?nf(C.util,0)+'%':'-'),
+    'RIGGING: '+C.n+' x '+(C.sl?C.sl.name:'-')+' · '+C.n+' x '+(C.sh?C.sh.name:'-')+' · esforço máx. por perna '+nf(C.Tmax,2)+' t · FD '+R.daf,'','VERIFICAÇÕES:'];
+  C.checks.forEach(k=>lines.push('- ['+STL[k.status]+'] '+k.label+': '+k.value));
+  lines.push('','Documento de protótipo. Conferir com catálogos, tabelas de carga e normas vigentes.');return lines.join('\n');
+}
+
+/* ---------- Banco de dados ---------- */
+VIEWS.db=()=>{
+  const rows=[];
+  SHACKLES.forEach(s=>rows.push(['Manilha',s.name,s.wll,s.mass+' kg',s.src]));
+  WIRE_D.forEach(d=>{const w=WIRE_K*d*d*1770/1000/G/5*0.85;rows.push(['Eslinga cabo de aço','Cabo 6x36 AF Ø'+d+' mm (1770 MPa)',+w.toFixed(2),nf(0.0043*d*d,2)+' kg/m','Calculado (EN 12385-4, FS 5, ef. 0,85)'])});
+  WEB.forEach(([w,b])=>rows.push(['Eslinga têxtil','Cinta '+w+' t / '+b+' mm',w,'–','EN 1492-1']));
+  CHAIN.forEach(([d,w])=>rows.push(['Eslinga de corrente','Corrente classe 80 Ø'+d+' mm',w,nf(0.022*d*d,2)+' kg/m','EN 818-2']));
+  S.db.acc.forEach(a=>rows.push([a.kind,a.name,a.wll,(a.massM||0)+' kg','Usuário']));
+  return `<h2>Banco de dados</h2><p class="lead">Equipamentos e acessórios usados nos cálculos. Os itens do usuário entram automaticamente nas listas de seleção.</p>
+<div class="card"><h3>Equipamentos de içamento</h3><div class="scroll"><table><thead><tr><th>Nome</th><th>Tipo</th><th class="num">Capacidade máx. (t)</th><th>Origem</th><th></th></tr></thead><tbody>
+${allCranes().map(c=>`<tr><td>${esc(c.name)}</td><td>${c.type==='mobile'?'Guindaste móvel':'Ponte rolante'}</td><td class="num">${c.type==='mobile'?nf(Math.max(...c.booms.flatMap(b=>b.chart.map(r=>r[1]))),0):nf(c.rated,0)}</td><td>${c.example?chip('warn','EXEMPLO FICTÍCIO'):chip('ok','USUÁRIO')}</td><td>${c.example?'':`<button class="btn sm" data-act="delCrane" data-arg="${c.id}">Remover</button>`}</td></tr>`).join('')}</tbody></table></div></div>
+<div class="card"><h3>Acessórios</h3><div class="row" style="margin-bottom:10px"><label class="f" style="flex-direction:row;align-items:center;gap:8px"><span>Filtrar</span><select id="db-filter"><option value="">Todos</option>${[...new Set(rows.map(r=>r[0]))].map(k=>`<option>${esc(k)}</option>`).join('')}</select></label></div>
+<div class="scroll" style="max-height:420px;overflow-y:auto"><table id="db-table"><thead><tr><th>Tipo</th><th>Designação</th><th class="num">WLL (t)</th><th class="num">Massa</th><th>Fonte</th><th></th></tr></thead><tbody>
+${rows.map(r=>`<tr data-kind="${esc(r[0])}"><td>${esc(r[0])}</td><td>${esc(r[1])}</td><td class="num">${nf(+r[2],2)}</td><td class="num">${esc(r[3])}</td><td class="note">${esc(r[4])}</td><td>${r[4]==='Usuário'?`<button class="btn sm" data-act="delAcc" data-arg="${esc(r[1])}">Remover</button>`:''}</td></tr>`).join('')}</tbody></table></div></div>
+<div class="card"><h3>Adicionar acessório</h3><div class="grid">
+<label class="f"><span>Tipo</span><select id="na-kind"><option value="shackle">Manilha</option><option value="sling-wire">Eslinga de cabo</option><option value="sling-web">Eslinga têxtil</option><option value="sling-chain">Eslinga de corrente</option><option value="link">Elo / argola</option><option value="hook">Gancho</option><option value="beam">Balancim / viga</option><option value="other">Outro</option></select></label>
+<label class="f"><span>Designação (fabricante, modelo)</span><input id="na-name"></label><label class="f"><span>WLL (t)</span><input id="na-wll" type="number" step="any"></label><label class="f"><span>Massa (kg ou kg/m)</span><input id="na-mass" type="number" step="any"></label></div>
+<div class="row" style="margin-top:10px"><button class="btn primary" data-act="addAcc">Adicionar</button><span id="na-msg" class="note"></span></div>
+<h3 style="margin-top:18px">Importar lista (CSV)</h3><p class="note">Uma linha por item: <code>tipo; designação; WLL(t); massa</code>. Tipos aceitos: shackle, sling-wire, sling-web, sling-chain, link, hook, beam, other.</p>
+<textarea id="na-csv" placeholder="shackle; Manilha G-2130 1 1/2in; 15.4; 7.5"></textarea><div class="row" style="margin-top:8px"><button class="btn" data-act="importAcc">Importar lista</button></div></div>`;
+};
+
+/* ---------- Catálogos ---------- */
+VIEWS.cat=()=>`<h2>Catálogos e ferramentas</h2>
+<p class="lead">Fontes para alimentar o banco de dados e ferramentas de apoio a leitura de desenho e simulação. Links dos sites oficiais; verifique a versão vigente dos catálogos.</p>
+<div class="card"><h3>Fabricantes</h3><div class="scroll"><table><thead><tr><th>Fabricante</th><th>Categoria</th><th>Dados a extrair</th></tr></thead><tbody>${MANUFACTURERS.map(m=>`<tr><td><a href="${m[2]}" target="_blank" rel="noopener">${esc(m[0])}</a></td><td>${esc(m[1])}</td><td class="note">${esc(m[3])}</td></tr>`).join('')}</tbody></table></div>
+<p class="note" style="margin-top:8px">Tabelas de carga de guindastes costumam ser fornecidas com o equipamento ou sob contrato. Peça o PDF ao locador e cadastre na aba Equipamento.</p></div>
+<div class="card"><h3>Ferramentas de apoio</h3><div class="scroll"><table><thead><tr><th>Ferramenta</th><th>Uso</th></tr></thead><tbody>
+<tr><td><a href="https://viewer.autodesk.com" target="_blank" rel="noopener">Autodesk Viewer</a></td><td class="note">Abrir DWG e STEP no navegador, medir e exportar para outros formatos</td></tr>
+<tr><td><a href="https://www.freecad.org" target="_blank" rel="noopener">FreeCAD</a></td><td class="note">Converter STEP para STL, medir e calcular centro de gravidade (gratuito)</td></tr>
+<tr><td><a href="https://librecad.org" target="_blank" rel="noopener">LibreCAD</a></td><td class="note">Abrir e salvar DXF (gratuito)</td></tr>
+<tr><td><a href="https://www.3dliftplan.com" target="_blank" rel="noopener">3D Lift Plan</a></td><td class="note">Simulação 3D comercial de içamentos, referência de recursos</td></tr>
+<tr><td><a href="https://www.cranimax.com" target="_blank" rel="noopener">Cranimax</a></td><td class="note">Planejamento de içamentos, biblioteca de guindastes, referência de recursos</td></tr>
+</tbody></table></div></div>
+<div class="card"><h3>Próximas etapas</h3><ul style="margin:0;padding-left:20px;display:grid;gap:4px">
+<li>Leitura de DWG diretamente, sem converter para DXF</li><li>STEP robusto, com extração de furos e candidatos a pontos de içamento</li><li>Banco de dados real, com tabelas de carga e catálogos importados dos PDFs</li>
+<li>Simulação de movimento da lança e verificação de colisões com a planta da fábrica</li><li>Relatório em PDF e histórico de revisões</li></ul></div>`;
+
+/* ============================== renderização e eventos ============================== */
+const NAV=[['grp','Plano'],['projeto','Projeto',1],['carga','Carga',2],['modelo','Desenho e modelo',3],['equip','Equipamento',4],['rigging','Rigging',5],['verif','Verificações',6],['viz','Visualização',7],['rel','Relatório',8],['grp','Referência'],['db','Banco de dados'],['cat','Catálogos']];
+function tabStatus(t,C){
+  const own=C.checks.filter(c=>c.tab===t);if(!own.length)return t==='rel'||t==='verif'?C.verdict:'na';
+  const s=own.map(c=>c.status);return s.includes('bad')?'bad':s.includes('warn')?'warn':'ok';
+}
+function renderNav(){
+  $('#nav').innerHTML=NAV.map(n=>n[0]==='grp'?'<div class="grp">'+n[1]+'</div>':'<button data-tab="'+n[0]+'"'+(n[0]===tab?' aria-current="page"':'')+'><span class="n">'+(n[2]||'')+'</span><span>'+n[1]+'</span><span class="dot '+tabStatus(n[0],C)+'" title="'+STL[tabStatus(n[0],C)]+'"></span></button>').join('');
+}
+LIVE.verdict=C=>chip(C.verdict,C.verdict==='bad'?'NÃO CONFORME · '+C.checks.filter(c=>c.status==='bad').length+' item(ns)':C.verdict==='warn'?'ATENÇÃO · '+C.checks.filter(c=>c.status==='warn').length+' item(ns)':'CÁLCULOS SEM NÃO CONFORMIDADE');
+function refreshLive(){
+  C=calc();
+  $$('[data-live]').forEach(el=>{const f=LIVE[el.dataset.live];if(f)el.innerHTML=f(C)});
+  renderNav();
+  if(tab==='viz')buildStage();
+}
+function render(){
+  if(stage&&tab!=='viz'){stage.dispose();stage=null}
+  if(modelStage&&tab!=='modelo'){modelStage.dispose();modelStage=null}
+  $('#view').innerHTML=VIEWS[tab]();
+  if(MOUNT[tab])MOUNT[tab]();
+  refreshLive();
+  if(tab==='viz')buildStage();
+}
+function go(t){tab=t;try{history.replaceState(null,'','#'+t)}catch(e){}render();window.scrollTo(0,0)}
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('[data-tab]');if(b)go(b.dataset.tab)});
+
+document.addEventListener('input',onInput);document.addEventListener('change',onInput);
+function onInput(e){
+  const el=e.target;
+  if(el.dataset&&el.dataset.chk){S.chk[el.dataset.chk]=el.checked;save();refreshLive();return}
+  if(!el.dataset||!el.dataset.b)return;
+  if(e.type==='input'&&el.tagName==='SELECT')return;
+  let v=el.value;
+  if(el.dataset.bool)v=v==='true';
+  else if(el.type==='number'||el.dataset.num){const n=parseFloat(String(v).replace(',','.'));v=Number.isFinite(n)?n:0}
+  setp(S,el.dataset.b,v);save();
+  if(/^ui\.(up|munit|mat|fill)$/.test(el.dataset.b)&&MODEL&&e.type==='change'){processModel()}
+  if(el.dataset.rr&&e.type==='change'){render();return}
+  refreshLive();
+}
+const ACT={
+  addLug(){S.load.lugs.push({x:0,z:0,y:S.load.H});save();render()},
+  delLug(i){S.load.lugs.splice(+i,1);save();render()},
+  genLugs(){const g=S.load.gen,L=S.load,n=+g.n,xs=[-g.dx/2,g.dx/2],zs=n===2?[0]:[-g.dz/2,g.dz/2];
+    L.lugs=[];zs.forEach(z=>xs.forEach(x=>L.lugs.push({x:+(x+L.cx).toFixed(3),z:+(z+L.cz).toFixed(3),y:+g.y})));save();render()},
+  pickSling(id){S.rig.slingId=id;save();refreshLive()},
+  pickShackle(id){S.rig.shackleId=id;save();refreshLive()},
+  exportJSON(){$('#json-box').value=JSON.stringify(S,null,1)},
+  copyJSON(){const t=JSON.stringify(S,null,1);$('#json-box').value=t;copyText(t)},
+  importJSON(){try{const o=JSON.parse($('#json-box').value);S=merge(defaults(),o);save();render();toast('Projeto carregado.')}catch(e){toast('Texto inválido: '+e.message)}},
+  example(){const keep=S.db;S=defaults();S.db=keep;save();render()},
+  newProj(){const b=$('#np-confirm');b.innerHTML='<button class="btn" data-act="newProj2">Confirmar: apagar tudo e começar em branco</button>'},
+  newProj2(){const d=defaults();Object.assign(d.meta,{project:'',tag:'',client:'',site:''});Object.assign(d.load,{name:'',mass:0,lugs:[]});S=d;save();render()},
+  copyReport(){copyText(reportText(C),'rep-msg')},
+  view(n){if(stage)stage.setView(n,C)},
+  tool(t){setTool(t)},fit(){d2fit()},
+  delMeas(i){D2.meas.splice(+i,1);drawMeasList();d2draw()},
+  applyMeas(i){const sel=$('#ms-'+i).value,m=D2.meas[+i];if(!m||!m.m)return;S.load[sel]=+m.m.toFixed(3);save();toast('Medida aplicada à carga ('+sel+' = '+nf(m.m,3)+' m).')},
+  calApply(){const mm=parseFloat($('#cal-mm').value);if(!(mm>0)||!D2.calPts)return;const px=Math.hypot(D2.calPts[0][0]-D2.calPts[1][0],D2.calPts[0][1]-D2.calPts[1][1]);D2.mPerUnit=mm/1000/px;D2.rasterCal=true;D2.meas.forEach(m=>{m.m=Math.hypot(m.a[0]-m.b[0],m.a[1]-m.b[1])*D2.mPerUnit});$('#cal-form').hidden=true;D2.calPts=null;D2.pts=[];setTool('measure');d2info();drawMeasList();toast('Escala calibrada.')},
+  applyModel(){applyModel(true)},applyModelDims(){applyModel(false)},
+  addCrane(){addCrane()},delCrane(id){S.db.cranes=S.db.cranes.filter(c=>c.id!==id);if(S.equip.craneId===id)S.equip.craneId='ex-mobile-100';save();render()},
+  addAcc(){const n=$('#na-name').value.trim(),w=parseFloat($('#na-wll').value),m=parseFloat($('#na-mass').value)||0;if(!n||!(w>0)){$('#na-msg').textContent='Informe designação e WLL.';return}
+    S.db.acc.push({id:uid(),kind:$('#na-kind').value,name:n,wll:w,massM:m});save();render()},
+  delAcc(name){S.db.acc=S.db.acc.filter(a=>a.name!==name);save();render()},
+  importAcc(){let n=0;$('#na-csv').value.split(/\n/).forEach(l=>{const p=l.split(';').map(x=>x.trim());if(p.length>=3){const w=parseFloat(p[2].replace(',','.'));if(w>0){S.db.acc.push({id:uid(),kind:p[0],name:p[1],wll:w,massM:parseFloat((p[3]||'0').replace(',','.'))||0});n++}}});save();render();toast(n+' item(ns) importado(s).')}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b.dataset.arg)}});
+function toast(t){let el=$('#toast');if(!el){el=document.createElement('div');el.id='toast';el.setAttribute('role','status');el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:4px;font-size:13px;z-index:50;max-width:90vw';document.body.appendChild(el)}
+  el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,3200)}
+function copyText(t,id){const done=()=>{if(id&&$('#'+id))$('#'+id).textContent='Copiado.';toast('Copiado para a área de transferência.')};
+  const fb=()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');done()}catch(e){toast('Selecione e copie manualmente.')}ta.remove()};
+  try{navigator.clipboard.writeText(t).then(done,fb)}catch(e){fb()}}
+function addCrane(){
+  const name=$('#nc-name').value.trim(),type=$('#nc-type').value,msg=$('#nc-msg');if(!name){msg.textContent='Informe o nome.';return}
+  const nums=s=>s.split(/[\/\-;]/).map(x=>parseFloat(x.replace(',','.')));
+  const hb=nums($('#nc-hb').value);const c={id:'u'+uid(),type,name,hookBlock:{mass:hb[0]||0,h:hb[1]||1}};
+  if(type==='mobile'){
+    const ang=nums($('#nc-ang').value);Object.assign(c,{hp:+$('#nc-hp').value||0,a:+$('#nc-a').value||0,minAngle:ang[0]||20,maxAngle:ang[1]||80,booms:[]});
+    const by={};$('#nc-chart').value.split(/\n/).forEach(l=>{const p=l.split(/[;\t]/).map(x=>parseFloat(x.replace(',','.')));if(p.length>=3&&p.every(Number.isFinite)){(by[p[0]]=by[p[0]]||[]).push([p[1],p[2]])}});
+    c.booms=Object.keys(by).map(k=>({L:+k,chart:by[k]})).sort((a,b)=>a.L-b.L);if(!c.booms.length){msg.textContent='Cole ao menos uma linha da tabela de carga.';return}
+  } else {const cp=nums($('#nc-cap').value);Object.assign(c,{rated:cp[0]||0,aux:cp[1]||0,hookMaxH:+$('#nc-hmax').value||0,span:20})}
+  S.db.cranes.push(c);S.equip.craneId=c.id;S.equip.boom=0;save();render();
+}
+
+/* ============================== visualizador 3D ============================== */
+class Stage{
+  constructor(el){
+    this.el=el;this.ok=true;
+    try{this.r=new THREE.WebGLRenderer({antialias:true})}catch(e){this.ok=false;el.innerHTML='<p class="note" style="padding:16px">WebGL indisponível neste navegador.</p>';return}
+    this.r.setPixelRatio(Math.min(window.devicePixelRatio||1,2));el.appendChild(this.r.domElement);
+    this.scene=new THREE.Scene();this.cam=new THREE.PerspectiveCamera(38,1,0.1,4000);
+    this.t=new THREE.Vector3(0,3,0);this.d=40;this.az=0.9;this.el_=0.5;this.ptr=new Map();this.dirty=true;this._pd=0;
+    const cvs=this.r.domElement;
+    cvs.addEventListener('pointerdown',e=>{cvs.setPointerCapture(e.pointerId);this.ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});this._pd=this.pinch()});
+    cvs.addEventListener('pointermove',e=>{const p=this.ptr.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+      if(this.ptr.size===2){const d=this.pinch();if(this._pd)this.d=clamp(this.d*this._pd/d,1,2500);this._pd=d}
+      else if(e.shiftKey||e.buttons===2||e.buttons===4)this.pan(dx,dy);
+      else{this.az-=dx*0.007;this.el_=clamp(this.el_+dy*0.007,-0.05,1.5)}this.dirty=true});
+    const up=e=>{this.ptr.delete(e.pointerId);this._pd=0};cvs.addEventListener('pointerup',up);cvs.addEventListener('pointercancel',up);
+    cvs.addEventListener('wheel',e=>{e.preventDefault();this.d=clamp(this.d*Math.exp(e.deltaY*0.001),1,2500);this.dirty=true},{passive:false});
+    cvs.addEventListener('contextmenu',e=>e.preventDefault());
+    this.ro=new ResizeObserver(()=>this.resize());this.ro.observe(el);this.resize();this.loop();
+  }
+  pinch(){const a=[...this.ptr.values()];return a.length===2?Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y):0}
+  pan(dx,dy){const k=this.d*0.0016,f=new THREE.Vector3();this.cam.getWorldDirection(f);const r=new THREE.Vector3().crossVectors(f,this.cam.up).normalize(),u=new THREE.Vector3().crossVectors(r,f).normalize();
+    this.t.addScaledVector(r,-dx*k).addScaledVector(u,dy*k)}
+  resize(){const w=this.el.clientWidth||300,h=this.el.clientHeight||300;this.r.setSize(w,h,false);this.cam.aspect=w/h;this.cam.updateProjectionMatrix();this.dirty=true}
+  setView(n,C){const v={iso:[0.9,0.5],front:[0,0.05],side:[Math.PI/2,0.05],top:[0,1.5]}[n]||[0.9,0.5];this.az=v[0];this.el_=v[1];this.dirty=true}
+  fit(box){const c=box.getCenter(new THREE.Vector3()),s=box.getSize(new THREE.Vector3());this.t.copy(c);this.d=Math.max(s.x,s.y,s.z)*1.5+4;this.dirty=true}
+  loop(){if(this.dead)return;this.raf=requestAnimationFrame(()=>this.loop());if(!this.dirty)return;this.dirty=false;
+    const cp=Math.cos(this.el_);this.cam.position.set(this.t.x+this.d*cp*Math.sin(this.az),this.t.y+this.d*Math.sin(this.el_),this.t.z+this.d*cp*Math.cos(this.az));this.cam.lookAt(this.t);this.r.render(this.scene,this.cam)}
+  clear(){while(this.scene.children.length){const o=this.scene.children[0];this.scene.remove(o);o.traverse&&o.traverse(n=>{if(n.geometry&&!n.geometry.userData.keep)n.geometry.dispose();if(n.material)n.material.dispose&&n.material.dispose()})}this.dirty=true}
+  dispose(){this.dead=true;cancelAnimationFrame(this.raf);this.ro&&this.ro.disconnect();if(this.r){this.r.dispose();this.r.domElement.remove()}}
+}
+const M3={mesh(g,color,op){return new THREE.Mesh(g,new THREE.MeshLambertMaterial({color,transparent:op!=null,opacity:op??1}))},
+  box(w,h,d,color,x,y,z,op){const m=M3.mesh(new THREE.BoxGeometry(w,h,d),color,op);m.position.set(x,y,z);return m},
+  rod(a,b,r,color){const A=new THREE.Vector3(...a),B=new THREE.Vector3(...b),dir=B.clone().sub(A),len=dir.length()||0.001;const m=M3.mesh(new THREE.CylinderGeometry(r,r,len,10),color);m.position.copy(A.clone().add(B).multiplyScalar(.5));m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());return m}};
+function buildStage(){
+  const host=$('#stage');if(!host)return;
+  if(!stage||stage.el!==host){if(stage)stage.dispose();stage=new Stage(host);stage.fresh=true}
+  if(!stage.ok)return;
+  const s=stage;s.clear();s.scene.background=new THREE.Color(cv('--canvas'));
+  s.scene.add(new THREE.AmbientLight(0xffffff,0.75));const dl=new THREE.DirectionalLight(0xffffff,0.7);dl.position.set(30,60,40);s.scene.add(dl);
+  const col={accent:cv('--accent'),steel:cv('--steel'),ink:cv('--ink'),ok:cv('--ok'),warn:cv('--warn'),bad:cv('--bad'),muted:cv('--muted'),grid:cv('--grid')};
+  const L=S.load,E=S.equip,c=C.crane,lift=+S.ui.lift||0,mobile=c&&c.type==='mobile';
+  const grid=new THREE.GridHelper(120,60,col.muted,col.grid);s.scene.add(grid);
+  const R=mobile?+E.radPick:0,hx=R;
+  const box=new THREE.Box3();
+  // carga
+  const lg=new THREE.Group();
+  if(modelGeo&&S.ui.model){const m=M3.mesh(modelGeo,col.accent);lg.add(m)}else lg.add(M3.box(L.L,L.H,L.W,col.accent,0,L.H/2,0,0.88));
+  lg.position.set(hx-L.cx,lift,-L.cz);s.scene.add(lg);
+  const cg=M3.mesh(new THREE.SphereGeometry(0.16,16,12),col.bad);cg.position.set(hx,lift+L.cy,0);s.scene.add(cg);
+  box.expandByPoint(new THREE.Vector3(hx-L.L,0,-L.W));box.expandByPoint(new THREE.Vector3(hx+L.L,lift+C.hookY+3,L.W));
+  // rigging
+  const hook=new THREE.Vector3(hx,lift+C.hookY,0);
+  C.legs.forEach((l,i)=>{const p=[hx-L.cx+l.x,lift+l.y,-L.cz+l.z];const u=C.sl?C.T[i]/C.sl.wllE:0;
+    s.scene.add(M3.rod([hook.x,hook.y,hook.z],p,0.035,u>1?col.bad:u>0.7?col.warn:col.ok));
+    const ey=M3.mesh(new THREE.SphereGeometry(0.1,10,8),col.ink);ey.position.set(...p);s.scene.add(ey)});
+  const bh=c&&c.hookBlock?c.hookBlock.h:1;
+  s.scene.add(M3.box(0.5,bh,0.4,col.ink,hx,hook.y+bh/2+0.2,0));
+  // equipamento
+  if(mobile){
+    s.scene.add(M3.box(6,1.4,2.8,col.muted,0,0.7,0),M3.box(2.4,1.8,2.4,col.steel,-1.5,2.3,0),M3.box(1.6,1.3,2.6,col.muted,-3.4,2.1,0));
+    const g=C.gPick;const th=g&&g.ok?rad(g.th):rad(70),Lb=C.boom.L;const tx=c.a+Lb*Math.cos(th),ty=c.hp+Lb*Math.sin(th);
+    s.scene.add(M3.rod([c.a,c.hp,0],[tx,ty,0],0.28,col.accent));s.scene.add(M3.rod([tx,ty,0],[hx,hook.y+bh+0.2,0],0.03,col.ink));
+    box.expandByPoint(new THREE.Vector3(-4,0,-4));box.expandByPoint(new THREE.Vector3(tx,ty,4));
+  } else if(c){
+    const hm=c.hookMaxH,top=hm+1.8,sp=c.span;
+    s.scene.add(M3.box(sp+1,0.9,0.7,col.steel,0,top,-1.5),M3.box(sp+1,0.9,0.7,col.steel,0,top,1.5),M3.box(1.2,0.8,3.8,col.accent,0,top+0.1,0));
+    [-sp/2,sp/2].forEach(x=>[-1.5,1.5].forEach(z=>s.scene.add(M3.box(0.5,top,0.5,col.muted,x,top/2,z,0.6))));
+    s.scene.add(M3.rod([hx,top,0],[hx,hook.y+bh+0.2,0],0.03,col.ink));box.expandByPoint(new THREE.Vector3(-sp/2,0,-4));box.expandByPoint(new THREE.Vector3(sp/2,top+1,4));
+  }
+  // obstáculo (esquemático)
+  if(E.obst>0){const ox=mobile?R/2:L.L/2+1.4;s.scene.add(M3.box(0.8,E.obst,10,col.bad,ox,E.obst/2,0,0.35))}
+  if(s.fresh){s.fit(box);s.fresh=false}
+  s.dirty=true;
+}
+window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(tab==='viz')buildStage();if(tab==='modelo'||D2.kind)d2draw()});
+
+/* ============================== modelo 3D importado (STL / STEP) ============================== */
+let MODEL=null,modelGeo=null;
+function parseSTL(buf){
+  const dv=new DataView(buf);const head=new TextDecoder().decode(new Uint8Array(buf,0,Math.min(80,buf.byteLength)));
+  const n=dv.getUint32(80,true);
+  if(buf.byteLength===84+n*50&&!/^\s*solid/.test(head)||buf.byteLength===84+n*50){
+    const p=new Float32Array(n*9);for(let i=0;i<n;i++){const o=84+i*50+12;for(let k=0;k<9;k++)p[i*9+k]=dv.getFloat32(o+k*4,true)}return p;
+  }
+  const t=new TextDecoder().decode(buf),re=/vertex\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)\s+([-+0-9.eE]+)/g,a=[];let m;while((m=re.exec(t)))a.push(+m[1],+m[2],+m[3]);return new Float32Array(a);
+}
+function setModel(pos,name){MODEL={pos,name};S.src=[...new Set([...S.src,name])];save();processModel()}
+function processModel(){
+  if(!MODEL)return;const u={mm:.001,cm:.01,m:1,in:.0254}[S.ui.munit]||.001,up=S.ui.up,p=MODEL.pos,n=p.length/3,w=new Float32Array(p.length);
+  for(let i=0;i<n;i++){const x=p[i*3]*u,y=p[i*3+1]*u,z=p[i*3+2]*u;let X,Y,Z;
+    if(up==='z'){X=x;Y=z;Z=-y}else if(up==='y'){X=x;Y=y;Z=z}else{X=y;Y=x;Z=-z}
+    w[i*3]=X;w[i*3+1]=Y;w[i*3+2]=Z}
+  let mn=[1e18,1e18,1e18],mx=[-1e18,-1e18,-1e18];for(let i=0;i<n;i++)for(let k=0;k<3;k++){const v=w[i*3+k];if(v<mn[k])mn[k]=v;if(v>mx[k])mx[k]=v}
+  const cx=(mn[0]+mx[0])/2,cz=(mn[2]+mx[2])/2;for(let i=0;i<n;i++){w[i*3]-=cx;w[i*3+1]-=mn[1];w[i*3+2]-=cz}
+  let vol=0,sx=0,sy=0,sz=0,area=0;const tri=Math.floor(n/3);
+  for(let t=0;t<tri;t++){const o=t*9,ax=w[o],ay=w[o+1],az=w[o+2],bx=w[o+3],by=w[o+4],bz=w[o+5],qx=w[o+6],qy=w[o+7],qz=w[o+8];
+    const v=(ax*(by*qz-bz*qy)-ay*(bx*qz-bz*qx)+az*(bx*qy-by*qx))/6;vol+=v;sx+=v*(ax+bx+qx)/4;sy+=v*(ay+by+qy)/4;sz+=v*(az+bz+qz)/4;
+    const ux=bx-ax,uy=by-ay,uz=bz-az,vx=qx-ax,vy=qy-ay,vz=qz-az;area+=0.5*Math.hypot(uy*vz-uz*vy,uz*vx-ux*vz,ux*vy-uy*vx)}
+  const sg=vol<0?-1:1;vol*=sg;
+  const dims={L:mx[0]-mn[0],H:mx[1]-mn[1],W:mx[2]-mn[2]};
+  MODEL.st={tri,vol,area,dims,cog:vol>1e-9?{x:sx/(vol*sg)/1,y:sy/(vol*sg),z:sz/(vol*sg)}:{x:0,y:dims.H/2,z:0},closed:vol>dims.L*dims.H*dims.W*0.005};
+  if(modelGeo)modelGeo.dispose();modelGeo=new THREE.BufferGeometry();modelGeo.setAttribute('position',new THREE.BufferAttribute(w,3));modelGeo.computeVertexNormals();modelGeo.userData.keep=true;
+}
+function modelStats(){
+  const m=MODEL&&MODEL.st;if(!m)return'';
+  const mass=m.vol*S.ui.mat*(S.ui.fill/100)/1000;
+  const k=(a,b,u)=>'<div><small>'+a+'</small><b>'+b+(u?' <em>'+u+'</em>':'')+'</b></div>';
+  return '<div class="kv">'+k('Triângulos',m.tri.toLocaleString('pt-BR'))+k('Comprimento X',nf(m.dims.L,3),'m')+k('Largura Z',nf(m.dims.W,3),'m')+k('Altura Y',nf(m.dims.H,3),'m')+k('Volume',nf(m.vol,3),'m³')+k('Massa estimada',nf(mass,2),'t')+k('CG X / Z',nf(m.cog.x,2)+' / '+nf(m.cog.z,2),'m')+k('CG altura',nf(m.cog.y,2),'m')+'</div>'+
+    (m.closed?'':'<p class="warnbox" style="margin-top:8px">A malha parece aberta ou muito esparsa: volume e CG podem não ser confiáveis. Use apenas as dimensões.</p>');
+}
+function applyModel(withMass){
+  const m=MODEL&&MODEL.st;if(!m)return;const L=S.load;
+  Object.assign(L,{L:+m.dims.L.toFixed(3),W:+m.dims.W.toFixed(3),H:+m.dims.H.toFixed(3),cx:+m.cog.x.toFixed(3),cz:+m.cog.z.toFixed(3),cy:+m.cog.y.toFixed(3)});
+  if(withMass){L.mass=+(m.vol*S.ui.mat*(S.ui.fill/100)/1000).toFixed(3);L.massSrc='Modelo CAD'}
+  save();refreshLive();toast('Dados do modelo aplicados à carga.');
+}
+async function loadOcct(){
+  const base='https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/';
+  if(!window.occtimportjs)await new Promise((ok,no)=>{const s=document.createElement('script');s.src=base+'occt-import-js.js';s.onload=ok;s.onerror=()=>no(new Error('script bloqueado'));document.head.appendChild(s)});
+  return Promise.race([window.occtimportjs({locateFile:n=>base+n}),new Promise((_,no)=>setTimeout(()=>no(new Error('tempo esgotado')),25000))]);
+}
+
+/* ============================== visualizador 2D (DXF, PDF, imagem) ============================== */
+const D2={kind:null,polys:[],texts:[],snaps:[],layers:{},hidden:{},bounds:null,raster:null,flip:true,view:{k:1,x:0,y:0},tool:'pan',pts:[],meas:[],mPerUnit:0.001,calPts:null,cur:null,name:''};
+const $c=()=>$('#c2d');
+function flattenDxf(dxf){
+  const polys=[],texts=[],blocks=dxf.blocks||{};
+  const mul=(M,N)=>[M[0]*N[0]+M[2]*N[1],M[1]*N[0]+M[3]*N[1],M[0]*N[2]+M[2]*N[3],M[1]*N[2]+M[3]*N[3],M[0]*N[4]+M[2]*N[5]+M[4],M[1]*N[4]+M[3]*N[5]+M[5]];
+  const T=(M,x,y)=>[M[0]*x+M[2]*y+M[4],M[1]*x+M[3]*y+M[5]];
+  const arc=(cx,cy,r,a0,a1)=>{while(a1<=a0)a1+=2*Math.PI;const n=Math.max(6,Math.ceil((a1-a0)/(2*Math.PI)*64)),p=[];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;p.push([cx+r*Math.cos(a),cy+r*Math.sin(a)])}return p};
+  const bulge=(p,q,b)=>{const dx=q[0]-p[0],dy=q[1]-p[1],d=Math.hypot(dx,dy);if(d<1e-12||!b)return[];
+    const k=d/2*((1-b*b)/(2*b)),cx=(p[0]+q[0])/2+(-dy/d)*k,cy=(p[1]+q[1])/2+(dx/d)*k,r=Math.hypot(p[0]-cx,p[1]-cy),a0=Math.atan2(p[1]-cy,p[0]-cx),th=4*Math.atan(b),n=Math.max(2,Math.ceil(Math.abs(th)/(Math.PI/16))),out=[];
+    for(let i=1;i<n;i++){const a=a0+th*i/n;out.push([cx+r*Math.cos(a),cy+r*Math.sin(a)])}return out};
+  const push=(pts,layer,M)=>{if(pts.length>=2)polys.push({layer,pts:pts.map(p=>T(M,p[0],p[1]))})};
+  const walk=(ents,M,depth)=>{for(const e of ents){const layer=e.layer||'0';
+    try{switch(e.type){
+      case 'LINE':push(e.vertices.map(v=>[v.x,v.y]),layer,M);break;
+      case 'LWPOLYLINE':case 'POLYLINE':{const v=e.vertices||[],pts=[];const closed=e.shape||e.closed;
+        for(let i=0;i<v.length;i++){const p=[v[i].x,v[i].y];pts.push(p);const nx=v[(i+1)%v.length];if(v[i].bulge&&(i<v.length-1||closed))pts.push(...bulge(p,[nx.x,nx.y],v[i].bulge))}
+        if(closed&&pts.length)pts.push(pts[0]);push(pts,layer,M);break}
+      case 'CIRCLE':push(arc(e.center.x,e.center.y,e.radius,0,2*Math.PI),layer,M);break;
+      case 'ARC':push(arc(e.center.x,e.center.y,e.radius,e.startAngle,e.endAngle),layer,M);break;
+      case 'ELLIPSE':{const a=Math.hypot(e.majorAxisEndPoint.x,e.majorAxisEndPoint.y),b=a*e.axisRatio,rot=Math.atan2(e.majorAxisEndPoint.y,e.majorAxisEndPoint.x);let a0=e.startAngle||0,a1=e.endAngle||2*Math.PI;while(a1<=a0)a1+=2*Math.PI;
+        const pts=[];for(let i=0;i<=64;i++){const t=a0+(a1-a0)*i/64,x=a*Math.cos(t),y=b*Math.sin(t);pts.push([e.center.x+x*Math.cos(rot)-y*Math.sin(rot),e.center.y+x*Math.sin(rot)+y*Math.cos(rot)])}push(pts,layer,M);break}
+      case 'SPLINE':{const src=(e.fitPoints&&e.fitPoints.length?e.fitPoints:e.controlPoints)||[];push(src.map(v=>[v.x,v.y]),layer,M);break}
+      case 'TEXT':case 'MTEXT':{const p=e.startPoint||e.position;if(p&&e.text){const q=T(M,p.x,p.y);texts.push({layer,x:q[0],y:q[1],h:(e.textHeight||e.height||1)*Math.hypot(M[0],M[1]),t:String(e.text).replace(/\\P/g,' ').replace(/\{[^}]*;|\}/g,'').slice(0,60)})}break}
+      case 'INSERT':{if(depth>3)break;const b=blocks[e.name];if(!b||!b.entities)break;const sx=e.xScale||1,sy=e.yScale||1,r=rad(e.rotation||0),p=e.position||{x:0,y:0};
+        walk(b.entities,mul(M,[Math.cos(r)*sx,Math.sin(r)*sx,-Math.sin(r)*sy,Math.cos(r)*sy,p.x,p.y]),depth+1);break}
+    }}catch(err){}}};
+  walk(dxf.entities||[],[1,0,0,1,0,0],0);return{polys,texts};
+}
+function d2bounds(){
+  let a=[1e18,1e18,-1e18,-1e18];
+  if(D2.raster){a=[0,0,D2.raster.width,D2.raster.height]}
+  else for(const p of D2.polys)for(const q of p.pts){if(q[0]<a[0])a[0]=q[0];if(q[1]<a[1])a[1]=q[1];if(q[0]>a[2])a[2]=q[0];if(q[1]>a[3])a[3]=q[1]}
+  D2.bounds=a;
+}
+const w2s=(x,y)=>[D2.view.x+D2.view.k*x,D2.view.y+(D2.flip?-D2.view.k*y:D2.view.k*y)];
+const s2w=(sx,sy)=>[(sx-D2.view.x)/D2.view.k,D2.flip?-(sy-D2.view.y)/D2.view.k:(sy-D2.view.y)/D2.view.k];
+function d2fit(){
+  const cvs=$c();if(!cvs||!D2.bounds)return;const r=cvs.getBoundingClientRect(),bb=D2.bounds,w=bb[2]-bb[0]||1,h=bb[3]-bb[1]||1,k=Math.min((r.width-30)/w,(r.height-30)/h),cx=(bb[0]+bb[2])/2,cy=(bb[1]+bb[3])/2;
+  D2.view.k=k;D2.view.x=r.width/2-k*cx;D2.view.y=D2.flip?r.height/2+k*cy:r.height/2-k*cy;d2draw();
+}
+function d2draw(){
+  const cvs=$c();if(!cvs||!D2.kind)return;const r=cvs.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  if(cvs.width!==Math.round(r.width*dpr)||cvs.height!==Math.round(r.height*dpr)){cvs.width=Math.round(r.width*dpr);cvs.height=Math.round(r.height*dpr)}
+  const g=cvs.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,r.width,r.height);
+  if(D2.raster){const [x0,y0]=w2s(0,0);g.drawImage(D2.raster,x0,y0,D2.raster.width*D2.view.k,D2.raster.height*D2.view.k)}
+  else{
+    g.strokeStyle=cv('--ink');g.lineWidth=1;g.beginPath();
+    for(const p of D2.polys){if(D2.hidden[p.layer])continue;let first=true;for(const q of p.pts){const [sx,sy]=w2s(q[0],q[1]);if(first){g.moveTo(sx,sy);first=false}else g.lineTo(sx,sy)}}
+    g.stroke();g.fillStyle=cv('--muted');
+    let n=0;for(const t of D2.texts){if(D2.hidden[t.layer])continue;const px=t.h*D2.view.k;if(px<5||n>1500)continue;const [sx,sy]=w2s(t.x,t.y);if(sx<-50||sy<-50||sx>r.width+50||sy>r.height+50)continue;g.font=Math.min(px,40)+'px '+cv('--mono');g.fillText(t.t,sx,sy);n++}
+  }
+  const col=cv('--accent');g.strokeStyle=col;g.fillStyle=col;g.lineWidth=2;g.font='12px '+cv('--mono');
+  const pts=D2.tool==='calibrate'?(D2.calPts||D2.pts):D2.pts;
+  const seg=(a,b,label)=>{const A=w2s(...a),B=w2s(...b);g.beginPath();g.moveTo(...A);g.lineTo(...B);g.stroke();[A,B].forEach(p=>{g.beginPath();g.arc(p[0],p[1],4,0,7);g.fill()});if(label){g.fillStyle=cv('--panel');const tw=g.measureText(label).width;g.fillRect((A[0]+B[0])/2-2,(A[1]+B[1])/2-14,tw+8,18);g.fillStyle=col;g.fillText(label,(A[0]+B[0])/2+2,(A[1]+B[1])/2)}};
+  D2.meas.forEach(m=>seg(m.a,m.b,m.m!=null?nf(m.m,3)+' m':nf(m.d,1)+' px'));
+  if(pts.length===1&&D2.cur)seg(pts[0],D2.cur);else if(pts.length===2)seg(pts[0],pts[1]);
+  if(D2.snapHit){const p=w2s(...D2.snapHit);g.strokeStyle=cv('--steel');g.strokeRect(p[0]-5,p[1]-5,10,10)}
+}
+function d2info(){
+  const i=$('#d2-info');if(!i)return;
+  i.textContent=D2.kind==='dxf'?D2.name+' · '+D2.polys.length.toLocaleString('pt-BR')+' entidades · 1 unidade = '+nf(D2.mPerUnit*1000,D2.mPerUnit<.001?4:1)+' mm':D2.name+' · '+(D2.mPerUnit?'escala calibrada: 1 px = '+nf(D2.mPerUnit*1000,3)+' mm':'calibre a escala antes de medir');
+}
+function setTool(t){D2.tool=t;D2.pts=[];D2.calPts=null;$('#cal-form').hidden=true;['pan','measure','calibrate'].forEach(n=>{const b=$('#t-'+n);if(b)b.setAttribute('aria-pressed',String(n===t))});
+  $c().style.cursor=t==='pan'?'grab':'crosshair';d2draw()}
+function drawMeasList(){
+  const el=$('#meas');if(!el)return;
+  if(!D2.meas.length){el.innerHTML='<p class="note">Use a ferramenta Medir e clique em dois pontos do desenho. Em DXF o programa encosta nos vértices próximos.</p>';return}
+  el.innerHTML='<div class="scroll"><table><thead><tr><th>#</th><th class="num">Distância</th><th>Aplicar à carga</th><th></th></tr></thead><tbody>'+D2.meas.map((m,i)=>'<tr><td>'+(i+1)+'</td><td class="num">'+(m.m!=null?nf(m.m,3)+' m ('+nf(m.m*1000,0)+' mm)':nf(m.d,1)+' px')+'</td><td>'+(m.m!=null?'<div class="row"><select id="ms-'+i+'" style="width:auto"><option value="L">Comprimento</option><option value="W">Largura</option><option value="H">Altura</option></select><button class="btn sm" data-act="applyMeas" data-arg="'+i+'">Aplicar</button></div>':'<span class="note">calibre a escala</span>')+'</td><td><button class="btn sm" data-act="delMeas" data-arg="'+i+'">Remover</button></td></tr>').join('')+'</tbody></table></div>';
+}
+function bindCanvas(){
+  const cvs=$c();let drag=null,ptrs=new Map(),pd=0;
+  const pos=e=>{const r=cvs.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+  const snap=(sx,sy)=>{D2.snapHit=null;let w=s2w(sx,sy);if(D2.kind!=='dxf')return w;let best=12*12,hit=null;
+    for(const p of D2.polys){if(D2.hidden[p.layer])continue;const a=p.pts[0],b=p.pts[p.pts.length-1];for(const q of [a,b]){const s=w2s(q[0],q[1]),d=(s[0]-sx)**2+(s[1]-sy)**2;if(d<best){best=d;hit=q}}
+      if(p.pts.length<=8)for(const q of p.pts){const s=w2s(q[0],q[1]),d=(s[0]-sx)**2+(s[1]-sy)**2;if(d<best){best=d;hit=q}}}
+    if(hit){D2.snapHit=hit;return hit}return w};
+  cvs.addEventListener('pointerdown',e=>{cvs.setPointerCapture(e.pointerId);const p=pos(e);ptrs.set(e.pointerId,p);pd=ptrs.size===2?Math.hypot(...[...ptrs.values()].reduce((a,b)=>[a[0]-b[0],a[1]-b[1]]),0):0;
+    if(D2.tool==='pan'||ptrs.size===2)drag={x:p[0],y:p[1],moved:false};
+    else{drag={x:p[0],y:p[1],moved:false,click:true}}});
+  cvs.addEventListener('pointermove',e=>{const p=pos(e);if(ptrs.has(e.pointerId))ptrs.set(e.pointerId,p);
+    if(ptrs.size===2){const a=[...ptrs.values()],d=Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1]);if(pd){zoomAt((a[0][0]+a[1][0])/2,(a[0][1]+a[1][1])/2,d/pd)}pd=d;return}
+    if(drag&&D2.tool==='pan'&&ptrs.has(e.pointerId)){D2.view.x+=p[0]-drag.x;D2.view.y+=p[1]-drag.y;drag.x=p[0];drag.y=p[1];drag.moved=true;d2draw();return}
+    if(drag&&drag.click&&Math.hypot(p[0]-drag.x,p[1]-drag.y)>5)drag.moved=true;
+    if(D2.tool!=='pan'){D2.cur=snap(p[0],p[1]);d2draw()}});
+  cvs.addEventListener('pointerup',e=>{const p=pos(e);ptrs.delete(e.pointerId);
+    if(drag&&drag.click&&!drag.moved&&D2.tool!=='pan'){const w=snap(p[0],p[1]);D2.pts.push([w[0],w[1]]);
+      if(D2.pts.length===2){const a=D2.pts[0],b=D2.pts[1],d=Math.hypot(a[0]-b[0],a[1]-b[1]);
+        if(D2.tool==='measure'){D2.meas.push({a,b,d,m:D2.kind==='dxf'?d*D2.mPerUnit:(D2.rasterCal?d*D2.mPerUnit:null)});D2.pts=[];drawMeasList()}
+        else{D2.calPts=[a,b];$('#cal-form').hidden=false;$('#cal-form').innerHTML='<label class="f" style="flex-direction:row;align-items:center;gap:8px"><span>Distância real entre os pontos (mm)</span><input id="cal-mm" type="number" step="any" style="width:130px"></label><button class="btn primary sm" data-act="calApply">Calibrar</button>'}}
+      d2draw()}
+    drag=null;pd=0});
+  cvs.addEventListener('wheel',e=>{e.preventDefault();const p=pos(e);zoomAt(p[0],p[1],Math.exp(-e.deltaY*0.0015))},{passive:false});
+  new ResizeObserver(()=>d2draw()).observe(cvs);
+}
+function zoomAt(sx,sy,f){const w=s2w(sx,sy);D2.view.k=clamp(D2.view.k*f,1e-6,1e6);const s=w2s(w[0],w[1]);D2.view.x+=sx-s[0];D2.view.y+=sy-s[1];d2draw()}
+const INSU={1:0.0254,2:0.3048,4:0.001,5:0.01,6:1,3:1609.344,14:0.1};
+async function handleFile(file){
+  const msg=$('#load-msg');const ext=(file.name.split('.').pop()||'').toLowerCase();msg.textContent='Lendo '+file.name+'…';
+  try{
+    if(ext==='dwg'){msg.textContent='Arquivos DWG não são lidos diretamente. No AutoCAD use Salvar como → DXF e carregue o DXF. Leitura direta de DWG está prevista para a versão local.';return}
+    if(ext==='dxf'){
+      const text=new TextDecoder('utf-8').decode(await file.arrayBuffer());
+      if(typeof DxfParser==='undefined')throw new Error('leitor de DXF não carregou');
+      const dxf=new DxfParser().parseSync(text);const fl=flattenDxf(dxf);
+      Object.assign(D2,{kind:'dxf',polys:fl.polys,texts:fl.texts,raster:null,flip:true,meas:[],pts:[],name:file.name,hidden:{},rasterCal:false});
+      const lay={};fl.polys.forEach(p=>lay[p.layer]=(lay[p.layer]||0)+1);D2.layers=lay;
+      const iu=dxf.header&&dxf.header['$INSUNITS'];D2.mPerUnit=S.ui.d2unit==='auto'?(INSU[iu]||0.001):({mm:.001,cm:.01,m:1,in:.0254}[S.ui.d2unit]);
+      showD2();msg.textContent='DXF carregado: '+fl.polys.length.toLocaleString('pt-BR')+' linhas, '+Object.keys(lay).length+' camadas. Confirme a unidade no seletor ao lado.';S.src=[...new Set([...S.src,file.name])];save();return}
+    if(ext==='pdf'){
+      if(typeof pdfjsLib==='undefined')throw new Error('leitor de PDF não carregou');
+      try{const wsrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';pdfjsLib.GlobalWorkerOptions.workerPort=new Worker(URL.createObjectURL(new Blob(['importScripts("'+wsrc+'");'],{type:'text/javascript'})))}catch(e){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}
+      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;const page=await pdf.getPage(1);
+      const v1=page.getViewport({scale:1}),sc=Math.min(2.5,5500/Math.max(v1.width,v1.height)),vp=page.getViewport({scale:sc});
+      const c=document.createElement('canvas');c.width=Math.round(vp.width);c.height=Math.round(vp.height);await page.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+      Object.assign(D2,{kind:'raster',raster:c,polys:[],texts:[],flip:false,meas:[],pts:[],name:file.name+' (página 1 de '+pdf.numPages+')',mPerUnit:0,rasterCal:false});showD2();msg.textContent='PDF renderizado (página 1). Calibre a escala com uma cota conhecida antes de medir.';S.src=[...new Set([...S.src,file.name])];save();return}
+    if(['png','jpg','jpeg'].includes(ext)){
+      const img=await createImageBitmap(file);const c=document.createElement('canvas');c.width=img.width;c.height=img.height;c.getContext('2d').drawImage(img,0,0);
+      Object.assign(D2,{kind:'raster',raster:c,polys:[],texts:[],flip:false,meas:[],pts:[],name:file.name,mPerUnit:0,rasterCal:false});showD2();msg.textContent='Imagem carregada. Calibre a escala antes de medir.';S.src=[...new Set([...S.src,file.name])];save();return}
+    if(ext==='stl'){setModel(parseSTL(await file.arrayBuffer()),file.name);showM3();msg.textContent='STL carregado.';return}
+    if(ext==='step'||ext==='stp'){
+      msg.textContent='Convertendo STEP… (pode levar alguns segundos)';
+      const occt=await loadOcct();const res=occt.ReadStepFile(new Uint8Array(await file.arrayBuffer()),null);if(!res.success)throw new Error('arquivo STEP não pôde ser lido');
+      const arr=[];res.meshes.forEach(m=>{const p=m.attributes.position.array,ix=m.index.array;for(let i=0;i<ix.length;i++){arr.push(p[ix[i]*3],p[ix[i]*3+1],p[ix[i]*3+2])}});
+      S.ui.munit='mm';setModel(new Float32Array(arr),file.name);showM3();msg.textContent='STEP convertido (assumido em milímetros).';return}
+    msg.textContent='Formato não suportado: .'+ext;
+  }catch(err){
+    msg.innerHTML='<span style="color:var(--bad)">Não foi possível abrir: '+esc(err.message)+'.</span>'+((ext==='step'||ext==='stp')?' O conversor STEP é bloqueado neste visualizador. Abra este arquivo HTML diretamente no computador, ou exporte o modelo para STL (FreeCAD, Autodesk Viewer).':'');
+  }
+}
+function showD2(){
+  $('#d2-wrap').hidden=false;bindCanvasOnce();
+  $('#d2-unit').innerHTML=D2.kind==='dxf'?'<label class="f" style="flex-direction:row;align-items:center;gap:6px"><span>Unidade</span><select id="d2u" style="width:auto"><option value="auto">Automática</option><option value="mm">mm</option><option value="cm">cm</option><option value="m">m</option><option value="in">polegada</option></select></label>':'';
+  const u=$('#d2u');if(u){u.value=S.ui.d2unit;u.onchange=()=>{S.ui.d2unit=u.value;if(u.value!=='auto')D2.mPerUnit={mm:.001,cm:.01,m:1,in:.0254}[u.value];D2.meas.forEach(m=>m.m=Math.hypot(m.a[0]-m.b[0],m.a[1]-m.b[1])*D2.mPerUnit);save();d2info();drawMeasList();d2draw()}}
+  $('#layers').innerHTML=D2.kind==='dxf'?Object.keys(D2.layers).slice(0,60).map(l=>'<label style="display:flex;gap:4px;align-items:center"><input type="checkbox" data-layer="'+esc(l)+'" checked>'+esc(l)+' <small>('+D2.layers[l]+')</small></label>').join(''):'';
+  $$('[data-layer]').forEach(cb=>cb.onchange=()=>{D2.hidden[cb.dataset.layer]=!cb.checked;d2draw()});
+  d2bounds();requestAnimationFrame(()=>{d2fit();d2info();drawMeasList();setTool('pan')});
+}
+let canvasBound=null;function bindCanvasOnce(){const c=$c();if(canvasBound!==c){bindCanvas();canvasBound=c}}
+function showM3(){
+  $('#m3-wrap').hidden=false;
+  if(!modelStage){modelStage=new Stage($('#m3'))}
+  refreshM3();
+}
+function refreshM3(){
+  if(!modelStage||!modelStage.ok||!modelGeo)return;const s=modelStage;s.clear();s.scene.background=new THREE.Color(cv('--canvas'));
+  s.scene.add(new THREE.AmbientLight(0xffffff,0.8));const dl=new THREE.DirectionalLight(0xffffff,0.7);dl.position.set(5,10,7);s.scene.add(dl);
+  s.scene.add(M3.mesh(modelGeo,cv('--accent')));const d=MODEL.st.dims;s.scene.add(new THREE.GridHelper(Math.max(d.L,d.W,d.H)*2.5,20,cv('--muted'),cv('--grid')));
+  s.fit(new THREE.Box3(new THREE.Vector3(-d.L/2,0,-d.W/2),new THREE.Vector3(d.L/2,d.H,d.W/2)));$('#m3-stats').innerHTML=modelStats();
+}
+MOUNT.modelo=function(){
+  const drop=$('#drop'),fi=$('#f-draw');
+  fi.onchange=()=>{if(fi.files[0])handleFile(fi.files[0])};
+  ['dragenter','dragover'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.add('over')}));
+  ['dragleave','drop'].forEach(n=>drop.addEventListener(n,e=>{e.preventDefault();drop.classList.remove('over')}));
+  drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)handleFile(f)});
+  if(D2.kind)showD2();
+  if(MODEL){showM3()}
+};
+MOUNT.projeto=function(){const fi=$('#f-json');fi.onchange=async()=>{if(fi.files[0]){$('#json-box').value=await fi.files[0].text();ACT.importJSON()}}};
+MOUNT.db=function(){const f=$('#db-filter');f.onchange=()=>$$('#db-table tbody tr').forEach(r=>r.hidden=f.value&&r.dataset.kind!==f.value)};
+
+/* ============================== início ============================== */
+const h=(location.hash||'').slice(1);if(VIEWS[h])tab=h;
+render();
+})();
+</script>
